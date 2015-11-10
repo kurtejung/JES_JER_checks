@@ -100,7 +100,7 @@ double fracRMS = 1.00;
 
 void FitDist(TH1F *&/*hrsp*/, double &/*mean*/, double &/*emean*/, double &/*sig*/, double &/*esig*/);
 
-int JRsp(int wJetID=1)
+int plot_JES_JER(int wJetID=1)
 {
   int iSave=0;
 

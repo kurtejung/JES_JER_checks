@@ -195,7 +195,7 @@ bool compare_pt(Jet jet1, Jet jet2){
 
 using namespace std;
 
-void RAA_read_mc_pbpb(int startfile = 0,
+void runForest_histosJESJER(int startfile = 0,
 		      int endfile = 1,
 		      int radius = 3,
 		      std::string kFoname="test_output.root"){
