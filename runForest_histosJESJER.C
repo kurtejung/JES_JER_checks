@@ -1,37 +1,7 @@
 // Raghav Kunnawalkam Elayavalli
-// June 5th 2014
-// CERN
+// Nov 11th 2015
+// Rutgers
 // for questions or comments: raghav.k.e at CERN dot CH
-
-// 
-// read all the MC files for PbPb and pp and make the required histograms for the analysis. 
-// need to follow the same cuts used in the data analysis here as well. 
-// 
-
-// July 19 - all pp histograms will have 2D arrays with [radius][eta_bin]. the PbPb histograms will be defined by 3D arrays with [radius][eta_bin][centrality]. 
-// July 20 - the loop structure(s) are defined as follows for the several histograms 
-//            Radius    : iteration variable: k;       number of iterations: no_radius;                                 values for the radii: list_radius
-//            Eta bins  : iteration variable: j;       number of iterations: nbins_eta;                                 values of the bins  : boundaries_eta
-//            Centrality: iteration variable: i;       number of iterations: nbins_cent +1;                             values of the bins  : boundaries_cent (till nbins_cent) + 0-200 (the whole range) for the final iteration. 
-//            p_T Hats  : iteration variable: h;       number of iterations: nbins_pthat (PbPb) and nbinsPP_pthat (pp); values of the bins  : boundaries_pthat (PbPb) and boundariesPP_pthat (pp)  
-//            jets      : iteration variable: g;       number of iterations: no of jets in Data[k][h];
-//            p_T       : defined just below as nbins_pt with 39 bins. to match our NLO and jet RpA analysis bins. 
-
-// Oct 23 - removed the cuts from the MC -> like the noisefilter etc... 
-
-// Nov 4th - added the supernova event cut rejection based on the no of hits in the pixel. 
-
-// Dec 9th - going to PU for the Jet RAA. 
-
-// Dec 17th - changing the file list to smaller 50k files on which JEC were derived to check for PF electron problems, requested by Marguerite.
-
-// Jan 13th 2015 - adding in the official pp mc (from Dragos) 
-//               - this is going to be a bit tricky since each file is split up into 4 smaller files. so each pthat will have a TChain!
-
-
-// Feb 12th - cleaned up the macro to make it usable (hopefuly) by others.
-
-// Jun 22th - going back to the HiForest with the trees from Pawan's for the event selection cuts and PF electron cuts. 
 
 #include <iostream>
 #include <stdio.h>
@@ -70,19 +40,6 @@
 
 #define pi 3.14159265
 
-static const int nbins_pt = 39;
-static const double boundaries_pt[nbins_pt+1] = {
-  3, 4, 5, 7, 9, 12, 
-  15, 18, 21, 24, 28,
-  32, 37, 43, 49, 56,
-  64, 74, 84, 97, 114,
-  133, 153, 174, 196,
-  220, 245, 272, 300, 
-  330, 362, 395, 430,
-  468, 507, 548, 592,
-  638, 686, 1000 
-};
-
 float deltaphi(float phi1, float phi2)
 {
   //float pi=TMath::Pi();
@@ -102,63 +59,40 @@ float deltaphi(float phi1, float phi2)
 //static const int no_radius = 3; 
 //static const int list_radius[no_radius] = {2,3,4};
 
-static const int nbins_cent = 6;
-static const Double_t boundaries_cent[nbins_cent+1] = {0,2,4,12,20,28,36};// multiply by 2.5 to get your actual centrality % (old 2011 data) 
-//now we have to multiply by 5, since centrality goes from 0-200. 
-static const Double_t ncoll[nbins_cent] = { 1660, 1310, 745, 251, 62.8, 10.8 };
-static const int trigValue = 4;
-static const char trigName [trigValue][256] = {"HLT55","HLT65","HLT80","Combined"};
-static const Float_t effecPrescl = 2.047507;
-static const char * etaWidth = (char*)"20_eta_20";
-
-static const double pthat[10] = {15, 30, 50, 80, 120, 170, 220, 280, 370, 2000};
-static const double xsecs[10] = {2.034e-01,
-				 1.075e-02,
-				 1.025e-03,
-				 9.865e-05,
-				 1.129e-05,
-				 1.465e-06,
-				 2.837e-07,
-				 5.323e-08,
-				 5.934e-09,
-				 0.0};
+static const double pthat[12] = {15, 30, 50, 80, 120, 170, 220, 280, 370, 460, 540, 2000};
+static const double xsecs[12] = {5.269E-01, 3.455E-02, 4.068E-03, 4.959E-04, 7.096E-05 , 1.223E-05, 3.031E-06 , 7.746E-07, 1.410E-07 , 3.216E-08, 1.001E-08 , 0.0};
 
 static const double weight_xsec[9] = { 7.20357e-07, 4.51655e-08, 2.6964e-09, 2.77274e-10, 3.1878e-11, 3.87126e-12, 1.62138e-12, 1.09471e-12, 4.40012e-13};
 static const int nentries_file[9] = { 0, 333206, 250567, 395126, 368126, 366982, 392206, 181018, 50455};
 
-static const double cent_HF_bound[] = {0, 0, 4.18352, 6.93443, 7.81838, 8.54289, 9.23664, 9.88781, 10.5473, 11.1902, 11.8706, 12.5891, 13.319, 14.0674, 14.8253, 15.6046, 16.4299, 17.2737, 18.1496, 19.0479, 20.0015, 20.912, 21.9531, 23.0394, 24.1431, 25.328, 26.5151, 27.8044, 29.0709, 30.4214, 31.8381, 33.283, 34.6493, 36.0984, 37.6395, 39.2199, 40.9588, 42.6406, 44.569, 46.3474, 48.2599, 50.2071, 52.3226, 54.5107, 56.9493, 59.3141, 61.7028, 64.244, 66.8831, 69.5266, 72.3771, 75.4711, 78.4157, 81.5896, 84.769, 88.2238, 91.8252, 95.4077, 98.98, 102.798, 106.782, 110.906, 115.16, 119.625, 124.341, 129.065, 133.87, 138.692, 143.708, 149.042, 154.287, 159.825, 165.462, 171.257, 176.947, 183.167, 189.585, 195.883, 202.593, 209.261, 216.241, 223.538, 231.183, 238.531, 246.204, 254.287, 262.356, 270.439, 278.961, 287.651, 297.26, 306.368, 315.948, 325.339, 335.032, 345.099, 355.337, 365.822, 376.405, 387.344, 399.021, 411.008, 422.029, 433.915, 446.391, 458.551, 470.541, 483.077, 495.431, 508.121, 521.027, 534.43, 548.443, 562.924, 576.951, 592.656, 608.19, 623.398, 639.439, 654.628, 670.442, 686.71, 702.497, 719.216, 736.875, 753.611, 771.997, 790, 809.284, 827.785, 846.916, 866.011, 885.882, 904.369, 924.095, 944.936, 966.012, 987.122, 1009.07, 1031.27, 1054.05, 1076.25, 1099.91, 1122.04, 1144.78, 1167.66, 1191.41, 1216.09, 1241.13, 1267.38, 1293.67, 1321.55, 1350.66, 1378.46, 1407.54, 1434.55, 1462.55, 1490.14, 1520.59, 1550.78, 1581.24, 1613.24, 1645.85, 1678.99, 1711.05, 1745.42, 1778.74, 1812.54, 1846.99, 1884.43, 1922.16, 1958.71, 1997.48, 2037.29, 2076.29, 2114.1, 2155.37, 2196.62, 2237.9, 2279.55, 2324.23, 2371.58, 2415.58, 2465.63, 2515.93, 2562.36, 2612.32, 2663.82, 2719.3, 2770.5, 2829.21, 2890.39, 2948.11, 3011.59, 3073.29, 3135.95, 3202.43, 3270.81, 3340.31, 3429.82, 5805.99};
-static const int nbins_HF_bound = sizeof(cent_HF_bound)/sizeof(double) -1;
 
-static const int ptBoundary[] = {10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 200, 500};
-static const int ptSelection = sizeof(ptBoundary)/sizeof(int) -1;
+const int ptbins[] = {50, 60, 70, 80, 90, 100, 110, 130, 150, 170, 190, 210, 240, 270, 300};
+const int nbins_pt = sizeof(ptbins)/sizeof(int) -1;
 
-const int ptbins_ana[] = {50, 60, 70, 80, 90, 100, 110, 130, 150, 170, 190, 210, 240, 270, 300};
-const int nbins_ana = sizeof(ptbins_ana)/sizeof(int) -1;
+const double etabins[] = {-5.191, -2.650, -2.043, -1.740, -1.479, -1.131, -0.783, -0.522, 0.522, 0.783, 1.131, 1.479, 1.740, 2.043, 2.650, 5.191};
+const int nbins_eta = sizeof(etabins)/sizeof(double) -1;
 
-int findHFbin(float HF_energy){
-  int ibin = -1;
-  for(int k = 0; k<nbins_HF_bound; ++k){
-    if(HF_energy > cent_HF_bound[k])
-      ibin = 200 - k;
-  }
-  return ibin;
-}
+const int centbins[] = {0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100};
+const int nbins_cent = sizeof(centbins)/sizeof(int) -1;
+
 
 int findBin(int bin)
 {
   int ibin=-1;
   //! centrality is defined as 0.5% bins of cross section
   //! in 0-200 bins               
-  if(bin<10)ibin=0; //! 0-5%
-  else if(bin>=10  && bin<20 )ibin=1; //! 5-10%
-  else if(bin>=20  && bin<60 )ibin=2;  //! 10-30%
-  else if(bin>=60  && bin<100)ibin=3;  //! 30-50%
-  else if(bin>=100 && bin<140)ibin=4;  //! 50-70%
-  else if(bin>=140 && bin<180)ibin=5;  //! 70-90%
-  else if(bin>=180 && bin<200)ibin=6;  //! 90-100%
+  if(bin<20)ibin=0; //! 0-10%
+  else if(bin>=20  && bin<40 )ibin=1; //! 10-20%
+  else if(bin>=40  && bin<60 )ibin=2; //! 20-30%
+  else if(bin>=60  && bin<80 )ibin=3; //! 30-40%
+  else if(bin>=80  && bin<100 )ibin=4; //! 40-50%
+  else if(bin>=100  && bin<120 )ibin=5; //! 50-60%
+  else if(bin>=120  && bin<140 )ibin=6; //! 60-70%
+  else if(bin>=140  && bin<160 )ibin=7; //! 70-80%
+  else if(bin>=160  && bin<180 )ibin=8; //! 80-90%
+  else if(bin>=180  && bin<200 )ibin=9; //! 90-100%
   return ibin;
 }
-
 
 float deltaR(float eta1, float phi1, float eta2, float phi2)
 {
@@ -196,9 +130,11 @@ bool compare_pt(Jet jet1, Jet jet2){
 using namespace std;
 
 void runForest_histosJESJER(int startfile = 0,
-		      int endfile = 1,
-		      int radius = 3,
-		      std::string kFoname="test_output.root"){
+			    int endfile = 1,
+			    int radius = 3,
+			    std::string algo = "Pu",
+			    std::string jetType= "PF",
+			    std::string kFoname="test_output.root"){
   
   TStopwatch timer;
   timer.Start();
@@ -232,7 +168,7 @@ void runForest_histosJESJER(int startfile = 0,
   string dir[N];
   dir[0] = "hltanalysis";
   dir[1] = "skimanalysis";
-  dir[2] = Form("akPu%dPFJetAnalyzer",radius);
+  dir[2] = Form("ak%s%d%sJetAnalyzer",algo.c_str(), radius, jetType.c_str());
   dir[3] = "akPu3CaloJetAnalyzer";
   dir[4] = "hiEvtAnalyzer";
   // dir[4] = "hltobject";
@@ -331,6 +267,9 @@ void runForest_histosJESJER(int startfile = 0,
   int hiNtracksEtaCut_F;
   int hiNtracksEtaPtCut_F;
   int pcollisionEventSelection_F;
+  int pHBHENoiseFilter_F;
+  int pprimaryvertexFilter_F;
+  int pVertexFilterCutGplus_F;
 
   float calopt_F[1000];
   jetpbpb[3]->SetBranchAddress("jtpt",&calopt_F);
@@ -353,7 +292,7 @@ void runForest_histosJESJER(int startfile = 0,
   jetpbpb[0]->SetBranchAddress("pVertexFilterCutGplus",&pVertexFilterCutGplus_F);
   jetpbpb[2]->SetBranchAddress("pthat",&pthat_F);
   jetpbpb[2]->SetBranchAddress("nref",&nref_F);
-  jetpbpb[2]->SetBranchAddress("subid",subid_F);
+  // jetpbpb[2]->SetBranchAddress("subid",subid_F);
   jetpbpb[2]->SetBranchAddress("refdrjt",refdrjt_F);
   jetpbpb[2]->SetBranchAddress("refparton_flavor",refparton_F);
   jetpbpb[2]->SetBranchAddress("refpt",refpt_F);
@@ -388,12 +327,23 @@ void runForest_histosJESJER(int startfile = 0,
   TFile *fout = new TFile(kFoname.c_str(),"RECREATE");
   fout->cd();
 
-  TH1F * hJER[nbins_ana][nbins_cent];
+  TH1F * hJER_pt[nbins_pt][nbins_cent];
+  TH1F * hJER_eta[nbins_eta][nbins_cent];
+  TH1F * hpthat[nbins_cent];
+  TH1F * hpT[nbins_cent];
+  TH2F * hresponse_matrix[nbins_cent];
 
   for(int i = 0;i<nbins_cent;++i){
 
-    for(int bin = 0; bin<nbins_ana; ++bin){
-      hJER[bin][i] = new TH1F(Form("hJER_%d_pt_%d_cent%d", ptbins_ana[bin], ptbins_ana[bin+1], i),"",150, 0, 3);
+    hpthat[i] = new TH1F(Form("hpthat_cent%d",i),"",1000, 0, 1000);
+    hpT[i] = new TH1F(Form("hpT_cent%d",i),"",1000, 0, 1000);
+    hresponse_matrix[i] = new TH2F(Form("hresponse_matrix_cent%d",i),"",1000, 0, 1000, 1000, 0, 1000);
+    
+    for(int bin = 0; bin<nbins_pt; ++bin){
+      hJER_pt[bin][i] = new TH1F(Form("hJER_ptbin_%d_cent%d",bin, i),Form("%d < pt < %d, %d-%d centrality", ptbins[bin], ptbins[bin+1], centbins[i], centbins[i+1]),150, 0, 3);
+    }
+    for(int bin = 0; bin<nbins_eta; ++bin){
+      hJER_eta[bin][i] = new TH1F(Form("hJER_etabin_%d_cent%d", bin, i),Form("%2.2f < eta < %2.2f, %d-%d centrality", etabins[bin], etabins[bin+1], centbins[i], centbins[i+1]),150, 0, 3);
     }
     
   }
@@ -421,12 +371,11 @@ void runForest_histosJESJER(int startfile = 0,
     if(fabs(vz_F)>15) continue;
     
     int cBin = findBin(hiBin_F);//tells us the centrality of the event. 
-    if(cBin==-1 || cBin==nbins_cent) continue;
   
     for( int jet = 0; jet<nref_F; jet++ ){
 
       if( fabs(eta_F[jet]) > 2.0 ) continue;
-      if( subid_F[jet] != 0) continue;
+      //if( subid_F[jet] != 0) continue;
       if( refdrjt_F[jet] > 0.3 ) continue;
       if( pt_F[jet] > 3.0 * pthat_F ) continue;
 
@@ -434,12 +383,20 @@ void runForest_histosJESJER(int startfile = 0,
       Float_t recpt = pt_F[jet];
       Float_t rawpt = rawpt_F[jet];
 
-      int ptbin = 0;
-      for(int bin = 0; bin<nbins_ana; ++bin){
-	if(genpt > ptbins_ana[bin]) ptbin = bin;
-      }
-      hJER[ptbin][cBin]->Fill((float)recpt/genpt);
+      hresponse_matrix[cBin]->Fill(genpt, recpt);
       
+      int ptbin = 0;
+      for(int bin = 0; bin<nbins_pt; ++bin){
+	if(genpt > ptbins[bin]) ptbin = bin;
+      }
+      hJER_pt[ptbin][cBin]->Fill((float)recpt/genpt);
+      
+      int etabin = 0;
+      for(int bin = 0; bin<nbins_eta; ++bin){
+	if(eta_F[jet] > etabins[bin]) etabin = bin;
+      }
+      hJER_eta[etabin][cBin]->Fill((float)recpt/genpt);
+
     }// jet loop
     
   }// event loop

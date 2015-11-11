@@ -37,16 +37,15 @@ const int digi=3;
 // change centrality and pT bins as and when necessary
 
 
-const int ncen=8;
-const char *cdir[ncen]  = {"05","510","1030","3050","5070","7090","90100","pp"};
-const char *ccent[ncen] = {"0-5%","5-10%","10-30%","30-50%","50-70%","70-90%","90-100%","pp"};
+const int ncen=10;
+const char *cdir[ncen]  = {"010","1020","2030","3040","4050","5060","6070","7080","8090","90100"};
+const char *ccent[ncen] = {"0-10%","10-20%","20-30%","30-50%","40-50%","50-60%","60-70%","70-80%","80-90%","90-100%"};
 
 const int knj = 1;
-std::string srad[knj]={"2"};
+std::string srad[knj]={"4"};
 
-double ptbins[] ={40, 50 ,60 ,70 ,80 ,90 ,100, 110, 120, 130, 140, 160, 200, 250, 300, 400/*, 548*/};
-const int nbins = sizeof(ptbins)/sizeof(double) - 1;
-
+const int ptbins[] = {50, 60, 70, 80, 90, 100, 110, 130, 150, 170, 190, 210, 240, 270, 300};
+const int nbins_pt = sizeof(ptbins)/sizeof(int) -1;
 double xmin=ptbins[0];
 double xmax=ptbins[nbins];
 
