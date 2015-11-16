@@ -62,25 +62,6 @@ float deltaphi(float phi1, float phi2)
 //static const int list_radius[no_radius] = {2,3,4};
 
 
-
-int findBin(int bin)
-{
-  int ibin=-1;
-  //! centrality is defined as 0.5% bins of cross section
-  //! in 0-200 bins               
-  if(bin<20)ibin=0; //! 0-10%
-  else if(bin>=20  && bin<40 )ibin=1; //! 10-20%
-  else if(bin>=40  && bin<60 )ibin=2; //! 20-30%
-  else if(bin>=60  && bin<80 )ibin=3; //! 30-40%
-  else if(bin>=80  && bin<100 )ibin=4; //! 40-50%
-  else if(bin>=100  && bin<120 )ibin=5; //! 50-60%
-  else if(bin>=120  && bin<140 )ibin=6; //! 60-70%
-  else if(bin>=140  && bin<160 )ibin=7; //! 70-80%
-  else if(bin>=160  && bin<180 )ibin=8; //! 80-90%
-  else if(bin>=180  && bin<200 )ibin=9; //! 90-100%
-  return ibin;
-}
-
 float deltaR(float eta1, float phi1, float eta2, float phi2)
 {
   float deta = eta1 - eta2;
@@ -117,11 +98,11 @@ bool compare_pt(Jet jet1, Jet jet2){
 using namespace std;
 
 void runForest_histosJESJER(int startfile = 0,
-			    int endfile = 1,
-			    int radius = 3,
+			    int endfile = 99,
+			    int radius = 4,
 			    std::string algo = "Pu",
-			    std::string jetType= "PF",
-			    std::string kFoname="test_output.root"){
+			    std::string jetType= "Calo",
+			    std::string kFoname="pthat80_globalfit_marta.root"){
   
   TStopwatch timer;
   timer.Start();
@@ -138,7 +119,7 @@ void runForest_histosJESJER(int startfile = 0,
 
   std::string infile_Forest;
 
-  infile_Forest = "mergedfile.txt";
+  infile_Forest = "pthat80_globalfit_marta.txt";
   std::ifstream instr_Forest(infile_Forest.c_str(),std::ifstream::in);
   std::string filename_Forest;
   
@@ -148,7 +129,7 @@ void runForest_histosJESJER(int startfile = 0,
     instr_Forest>>filename_Forest;
   }
 
-  const int N = 5; //6
+  const int N = 4; //6
 
   TChain * jetpbpb[N];
 
@@ -156,15 +137,15 @@ void runForest_histosJESJER(int startfile = 0,
   dir[0] = "hltanalysis";
   dir[1] = "skimanalysis";
   dir[2] = Form("ak%s%d%sJetAnalyzer",algo.c_str(), radius, jetType.c_str());
-  dir[3] = "akPu3CaloJetAnalyzer";
-  dir[4] = "hiEvtAnalyzer";
+  //dir[3] = "akPu3CaloJetAnalyzer";
+  dir[3] = "hiEvtAnalyzer";
   // dir[4] = "hltobject";
 
   string trees[N] = {
     "HltTree",
     "HltTree",
     "t",
-    "t",
+    // "t",
     "HiTree"
     // , "jetObjTree"
   };
@@ -181,7 +162,7 @@ void runForest_histosJESJER(int startfile = 0,
     jetpbpb[1]->Add(filename_Forest.c_str());
     jetpbpb[2]->Add(filename_Forest.c_str());
     jetpbpb[3]->Add(filename_Forest.c_str());
-    jetpbpb[4]->Add(filename_Forest.c_str());
+    //jetpbpb[4]->Add(filename_Forest.c_str());
 
     cout<<"filename: "<<filename_Forest<<endl;
     
@@ -193,8 +174,8 @@ void runForest_histosJESJER(int startfile = 0,
     if(printDebug)cout << "Entries : " << jetpbpb[2]->GetEntries() << endl;
     if(printDebug)cout << "Tree loaded  " << string(dir[3]+"/"+trees[3]).data() << endl;
     if(printDebug)cout << "Entries : " << jetpbpb[3]->GetEntries() << endl;
-    if(printDebug)cout << "Tree loaded  " << string(dir[4]+"/"+trees[4]).data() << endl;
-    if(printDebug)cout << "Entries : " << jetpbpb[4]->GetEntries() << endl;
+    //if(printDebug)cout << "Tree loaded  " << string(dir[4]+"/"+trees[4]).data() << endl;
+    //if(printDebug)cout << "Entries : " << jetpbpb[4]->GetEntries() << endl;
 
     cout<<"Total number of events loaded in HiForest = "<<jetpbpb[2]->GetEntries()<<endl;
 
@@ -202,10 +183,10 @@ void runForest_histosJESJER(int startfile = 0,
   
   jetpbpb[2]->AddFriend(jetpbpb[0]);
   jetpbpb[2]->AddFriend(jetpbpb[1]);
-  jetpbpb[2]->AddFriend(jetpbpb[4]);
-  jetpbpb[3]->AddFriend(jetpbpb[0]);
-  jetpbpb[3]->AddFriend(jetpbpb[1]);
-  jetpbpb[3]->AddFriend(jetpbpb[4]);
+  jetpbpb[2]->AddFriend(jetpbpb[3]);
+  //jetpbpb[3]->AddFriend(jetpbpb[0]);
+  //jetpbpb[3]->AddFriend(jetpbpb[1]);
+  //jetpbpb[3]->AddFriend(jetpbpb[4]);
   
   // Forest files 
   int nref_F;
@@ -258,25 +239,25 @@ void runForest_histosJESJER(int startfile = 0,
   int pprimaryvertexFilter_F;
   int pVertexFilterCutGplus_F;
 
-  float calopt_F[1000];
-  jetpbpb[3]->SetBranchAddress("jtpt",&calopt_F);
+  //float calopt_F[1000];
+  //jetpbpb[3]->SetBranchAddress("jtpt",&calopt_F);
   
-  jetpbpb[4]->SetBranchAddress("evt",&evt_F);
-  jetpbpb[4]->SetBranchAddress("run",&run_F);
-  jetpbpb[4]->SetBranchAddress("lumi",&lumi_F);
-  jetpbpb[4]->SetBranchAddress("hiBin",&hiBin_F);
-  jetpbpb[4]->SetBranchAddress("hiHF", &hiHF_F);
-  jetpbpb[4]->SetBranchAddress("hiNpix",&hiNpix_F);
-  jetpbpb[4]->SetBranchAddress("hiNpixelTracks",&hiNpixelTracks_F);
-  jetpbpb[4]->SetBranchAddress("hiNtracks",&hiNtracks_F);
-  jetpbpb[4]->SetBranchAddress("hiNtracksPtCut",&hiNtracksPtCut_F);
-  jetpbpb[4]->SetBranchAddress("hiNtracksEtaCut",&hiNtracksEtaCut_F);
-  jetpbpb[4]->SetBranchAddress("hiNtracksEtaPtCut",&hiNtracksEtaPtCut_F);
-  jetpbpb[4]->SetBranchAddress("vz",&vz_F);
+  jetpbpb[3]->SetBranchAddress("evt",&evt_F);
+  jetpbpb[3]->SetBranchAddress("run",&run_F);
+  jetpbpb[3]->SetBranchAddress("lumi",&lumi_F);
+  jetpbpb[3]->SetBranchAddress("hiBin",&hiBin_F);
+  jetpbpb[3]->SetBranchAddress("hiHF", &hiHF_F);
+  jetpbpb[3]->SetBranchAddress("hiNpix",&hiNpix_F);
+  jetpbpb[3]->SetBranchAddress("hiNpixelTracks",&hiNpixelTracks_F);
+  jetpbpb[3]->SetBranchAddress("hiNtracks",&hiNtracks_F);
+  jetpbpb[3]->SetBranchAddress("hiNtracksPtCut",&hiNtracksPtCut_F);
+  jetpbpb[3]->SetBranchAddress("hiNtracksEtaCut",&hiNtracksEtaCut_F);
+  jetpbpb[3]->SetBranchAddress("hiNtracksEtaPtCut",&hiNtracksEtaPtCut_F);
+  jetpbpb[3]->SetBranchAddress("vz",&vz_F);
   jetpbpb[1]->SetBranchAddress("pcollisionEventSelection",&pcollisionEventSelection_F);
-  jetpbpb[0]->SetBranchAddress("pHBHENoiseFilter",&pHBHENoiseFilter_F);
-  jetpbpb[0]->SetBranchAddress("pprimaryvertexFilter",&pprimaryvertexFilter_F);
-  jetpbpb[0]->SetBranchAddress("pVertexFilterCutGplus",&pVertexFilterCutGplus_F);
+  // jetpbpb[0]->SetBranchAddress("pHBHENoiseFilter",&pHBHENoiseFilter_F);
+  // jetpbpb[0]->SetBranchAddress("pprimaryvertexFilter",&pprimaryvertexFilter_F);
+  // jetpbpb[0]->SetBranchAddress("pVertexFilterCutGplus",&pVertexFilterCutGplus_F);
   jetpbpb[2]->SetBranchAddress("pthat",&pthat_F);
   jetpbpb[2]->SetBranchAddress("nref",&nref_F);
   // jetpbpb[2]->SetBranchAddress("subid",subid_F);
@@ -300,12 +281,12 @@ void runForest_histosJESJER(int startfile = 0,
   jetpbpb[2]->SetBranchAddress("eMax",eMax_F);
   jetpbpb[2]->SetBranchAddress("muSum",muSum_F);
   jetpbpb[2]->SetBranchAddress("muMax",muMax_F);
-  jetpbpb[0]->SetBranchAddress("HLT_HIJet55_v7",&jet55_F);
-  jetpbpb[0]->SetBranchAddress("HLT_HIJet55_v7_Prescl",&jet55_p_F);
-  jetpbpb[0]->SetBranchAddress("HLT_HIJet65_v7",&jet65_F);
-  jetpbpb[0]->SetBranchAddress("HLT_HIJet65_v7_Prescl",&jet65_p_F);
-  jetpbpb[0]->SetBranchAddress("HLT_HIJet80_v7",&jet80_F);
-  jetpbpb[0]->SetBranchAddress("HLT_HIJet80_v7_Prescl",&jet80_p_F);
+  // jetpbpb[0]->SetBranchAddress("HLT_HIJet55_v7",&jet55_F);
+  // jetpbpb[0]->SetBranchAddress("HLT_HIJet55_v7_Prescl",&jet55_p_F);
+  // jetpbpb[0]->SetBranchAddress("HLT_HIJet65_v7",&jet65_F);
+  // jetpbpb[0]->SetBranchAddress("HLT_HIJet65_v7_Prescl",&jet65_p_F);
+  // jetpbpb[0]->SetBranchAddress("HLT_HIJet80_v7",&jet80_F);
+  // jetpbpb[0]->SetBranchAddress("HLT_HIJet80_v7_Prescl",&jet80_p_F);
   jetpbpb[0]->SetBranchAddress("L1_SingleJet36_BptxAND",&L1_sj36_F);
   jetpbpb[0]->SetBranchAddress("L1_SingleJet36_BptxAND_Prescl",&L1_sj36_p_F);
   jetpbpb[0]->SetBranchAddress("L1_SingleJet52_BptxAND",&L1_sj52_F);
@@ -319,6 +300,7 @@ void runForest_histosJESJER(int startfile = 0,
   TH1F * hpthat[ncen];
   TH1F * hpT[ncen];
   TH2F * hresponse_matrix[ncen];
+  TH1F * hcent = new TH1F("hcent","",200, 0, 200);
 
   for(int i = 0;i<ncen;++i){
 
@@ -351,14 +333,18 @@ void runForest_histosJESJER(int startfile = 0,
     jetpbpb[0]->GetEntry(nEvt);
     jetpbpb[1]->GetEntry(nEvt);
     jetpbpb[2]->GetEntry(nEvt);
-    jetpbpb[4]->GetEntry(nEvt);
+    //jetpbpb[4]->GetEntry(nEvt);
     jetpbpb[3]->GetEntry(nEvt);
     
     if(pcollisionEventSelection_F==0) continue; 
     if(fabs(vz_F)>15) continue;
+
+    hcent->Fill(hiBin_F);
     
     int cBin = findBin(hiBin_F);//tells us the centrality of the event. 
-  
+    if(cBin == -1) continue;
+    if(printDebug) cout<<"cBin = "<<cBin<<endl;
+    
     for( int jet = 0; jet<nref_F; jet++ ){
 
       if( fabs(eta_F[jet]) > 2.0 ) continue;
@@ -371,6 +357,8 @@ void runForest_histosJESJER(int startfile = 0,
       Float_t rawpt = rawpt_F[jet];
 
       hresponse_matrix[cBin]->Fill(genpt, recpt);
+
+      hpT[cBin]->Fill(recpt);
       
       int ptbin = 0;
       for(int bin = 0; bin<nbins_pt; ++bin){
