@@ -6,4 +6,4 @@ root -l <<EOF
 EOF
 
 rm run_MC.tar
-tar -zcvf run_MC.tar mergedfile.txt runForest*.*
+tar -zcvf run_MC.tar *.txt runForest*.* *.h

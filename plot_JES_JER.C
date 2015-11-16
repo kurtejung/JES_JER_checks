@@ -28,6 +28,8 @@
 #include "Minuit2/Minuit2Minimizer.h"
 #include "Math/Functor.h"
 
+#include "boundaries.h"
+
 
 using namespace std;
 
@@ -35,19 +37,6 @@ const int digi=3;
 
 
 // change centrality and pT bins as and when necessary
-const int ncen=10;
-const char *cdir[ncen]  = {"010","1020","2030","3040","4050","5060","6070","7080","8090","90100"};
-const char *ccent[ncen] = {"0-10%","10-20%","20-30%","30-50%","40-50%","50-60%","60-70%","70-80%","80-90%","90-100%"};
-
-const int knj = 1;
-std::string srad[knj]={"4"};
-
-const int ptbins[] = {50, 60, 70, 80, 90, 100, 110, 130, 150, 170, 190, 210, 240, 270, 300};
-const double ptbins_bound[] = {50, 60, 70, 80, 90, 100, 110, 130, 150, 170, 190, 210, 240, 270, 300};
-const int nbins_pt = sizeof(ptbins)/sizeof(int) -1;
-
-double xmin=ptbins[0];
-double xmax=ptbins[nbins_pt];
 
 void  LoadStyle();
 void drawText2(const char */*text*/, float /*xp*/, float /*yp*/, int /*size*/);
@@ -139,7 +128,7 @@ int plot_JES_JER(int wJetID=1,
 
     for(int ic=0; ic<ncen; ic++){
 
-      hMean[nj][ic] = new TH1F(Form("hMean%d_%d",nj,ic),Form("Mean %s %s",algname.c_str(),ccent[ic]),nbins_pt,ptbins_bound);
+      hMean[nj][ic] = new TH1F(Form("hMean%d_%d",nj,ic),Form("Mean %s %s",algname.c_str(),ccent[ic]),nbins_pt,ptbins);
       hMean[nj][ic]->SetMarkerColor(1);
       hMean[nj][ic]->SetMarkerStyle(20);
       hMean[nj][ic]->SetLineColor(1);
@@ -150,7 +139,7 @@ int plot_JES_JER(int wJetID=1,
       MakeHistMean(hMean[nj][ic],1.082,0.858); 
       //MakeHistMean(hMean[nj][ic],1.052,0.934); 
  
-      hSigma[nj][ic] = new TH1F(Form("hSigma%d_%d",nj,ic),Form("Sigma %s %s",algname.c_str(),ccent[ic]),nbins_pt,ptbins_bound);
+      hSigma[nj][ic] = new TH1F(Form("hSigma%d_%d",nj,ic),Form("Sigma %s %s",algname.c_str(),ccent[ic]),nbins_pt,ptbins);
       hSigma[nj][ic]->SetMarkerColor(1);
       hSigma[nj][ic]->SetMarkerStyle(20);
       hSigma[nj][ic]->SetLineColor(1);
