@@ -196,20 +196,20 @@ void Validate_Data_JetsPP(int startfile = 0,
   jetpbpb[2]->SetBranchAddress("eMax",eMax_F);
   jetpbpb[2]->SetBranchAddress("muSum",muSum_F);
   jetpbpb[2]->SetBranchAddress("muMax",muMax_F);
-  jetpbpb[0]->SetBranchAddress("",&jetMB_F);
-  jetpbpb[0]->SetBranchAddress("",&jetMB_p_F);  
-  jetpbpb[0]->SetBranchAddress("",&jet40_F);
-  jetpbpb[0]->SetBranchAddress("",&jet40_p_F);
-  jetpbpb[0]->SetBranchAddress("",&jet60_F);
-  jetpbpb[0]->SetBranchAddress("",&jet60_p_F);
-  jetpbpb[0]->SetBranchAddress("",&jet80_F);
-  jetpbpb[0]->SetBranchAddress("",&jet80_p_F);
-  jetpbpb[0]->SetBranchAddress("",&jet100_F);
-  jetpbpb[0]->SetBranchAddress("",&jet100_p_F);
-  jetpbpb[0]->SetBranchAddress("L1_SingleJet36_BptxAND",&L1_sj36_F);
-  jetpbpb[0]->SetBranchAddress("L1_SingleJet36_BptxAND_Prescl",&L1_sj36_p_F);
-  jetpbpb[0]->SetBranchAddress("L1_SingleJet52_BptxAND",&L1_sj52_F);
-  jetpbpb[0]->SetBranchAddress("L1_SingleJet52_BptxAND_Prescl",&L1_sj52_p_F);
+  jetpbpb[0]->SetBranchAddress("HLT_L1MinimumBiasHF1_AND_v1",&jetMB_F);
+  //jetpbpb[0]->SetBranchAddress("",&jetMB_p_F);  
+  jetpbpb[0]->SetBranchAddress(Form("HLT_AK4%sJet40_Eta5p1_v1", jetType),&jet40_F);
+  //jetpbpb[0]->SetBranchAddress("",&jet40_p_F);
+  jetpbpb[0]->SetBranchAddress(Form("HLT_AK4%sJet60_Eta5p1_v1", jetType),&jet60_F);
+  //jetpbpb[0]->SetBranchAddress("",&jet60_p_F);
+  jetpbpb[0]->SetBranchAddress(Form("HLT_AK4%sJet80_Eta5p1_v1", jetType),&jet80_F);
+  //jetpbpb[0]->SetBranchAddress("",&jet80_p_F);
+  jetpbpb[0]->SetBranchAddress(Form("HLT_AK4%sJet100_Eta5p1_v1", jetType),&jet100_F);
+  //jetpbpb[0]->SetBranchAddress("",&jet100_p_F);
+  // jetpbpb[0]->SetBranchAddress("L1_SingleJet36_BptxAND",&L1_sj36_F);
+  // jetpbpb[0]->SetBranchAddress("L1_SingleJet36_BptxAND_Prescl",&L1_sj36_p_F);
+  // jetpbpb[0]->SetBranchAddress("L1_SingleJet52_BptxAND",&L1_sj52_F);
+  // jetpbpb[0]->SetBranchAddress("L1_SingleJet52_BptxAND_Prescl",&L1_sj52_p_F);
 
   TFile *fout = new TFile(kFoname.c_str(),"RECREATE");
   fout->cd();
@@ -262,7 +262,8 @@ void Validate_Data_JetsPP(int startfile = 0,
     if(jetMB_F && jet100_F) hJet100andMB->Fill(pt_F[0]);
 
     float Aj = (float)(pt_F[0]-pt_F[1])/(pt_F[0]+pt_F[1]);
-    float DijetRel = (float)(2 + Aj)/(2 - Aj);
+    float ptAvg = (float)(pt_F[0]+pt_F[1])/2;
+    float DijetRel = (float)(2 + ptAvg)/(2 - ptAvg);
 
     int binpt = -1, bineta = -1;
     for(int npt = 0; npt<nbins_pt; ++npt){
@@ -274,7 +275,8 @@ void Validate_Data_JetsPP(int startfile = 0,
     }
     if(bineta == -1) continue;
 
-    hRelResponse[binpt][bineta]->Fill(DijetRel);
+    if((float)(pt_F[2]/ptAvg) < 0.2 && deltaphi(phi_F[0], phi_F[1]) > (float)2*pi/2)
+      hRelResponse[binpt][bineta]->Fill(DijetRel);
     hAj[binpt][bineta]->Fill(Aj);
 
   }
