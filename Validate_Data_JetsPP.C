@@ -1,19 +1,20 @@
-// Raghav Kunnawalkam Elayavalli
-// Nov 11th 2015
-// Rutgers
-// for questions or comments: raghav.k.e at CERN dot CH
+// macro to read in the latest hiForests and make plots to check the Jets.
+// Author: Raghav Kunnawalkam Elayavalli
+//         Rutgers,@ CERN for Run2
+//         Nov 19th 2015
 
 #include "boundaries.h"
 
 using namespace std;
 
-void runForest_histosJESJER(int startfile = 0,
-			    int endfile = 99,
-			    int radius = 4,
-			    std::string algo = "Pu",
-			    std::string jetType= "Calo",
-			    std::string kFoname="pthat80_globalfit_marta.root"){
-  
+void Validate_Data_JetsPP(int startfile = 0,
+			  int endfile = 1,
+			  int radius = 4,
+			  std::string algo = "Pu",
+			  std::string jetType= "Calo",
+			  std::string kFoname="test_output.root")
+{
+
   TStopwatch timer;
   timer.Start();
   
@@ -122,16 +123,18 @@ void runForest_histosJESJER(int startfile = 0,
   float refdrjt_F[1000];
   int refparton_F[1000];
   float pthat_F;
-  int jet55_F;
-  int jet65_F;
+  int jet40_F;
+  int jet60_F;
   int jet80_F;
+  int jet100_F;
   int L1_sj36_F;
   int L1_sj52_F;
   int L1_sj36_p_F;
   int L1_sj52_p_F;
-  int jet55_p_F;
-  int jet65_p_F;
+  int jet40_p_F;
+  int jet60_p_F;
   int jet80_p_F;
+  int jet100_p_F;
   float vz_F;
   int evt_F;
   int run_F;
@@ -191,12 +194,14 @@ void runForest_histosJESJER(int startfile = 0,
   jetpbpb[2]->SetBranchAddress("eMax",eMax_F);
   jetpbpb[2]->SetBranchAddress("muSum",muSum_F);
   jetpbpb[2]->SetBranchAddress("muMax",muMax_F);
-  // jetpbpb[0]->SetBranchAddress("HLT_HIJet55_v7",&jet55_F);
-  // jetpbpb[0]->SetBranchAddress("HLT_HIJet55_v7_Prescl",&jet55_p_F);
-  // jetpbpb[0]->SetBranchAddress("HLT_HIJet65_v7",&jet65_F);
-  // jetpbpb[0]->SetBranchAddress("HLT_HIJet65_v7_Prescl",&jet65_p_F);
-  // jetpbpb[0]->SetBranchAddress("HLT_HIJet80_v7",&jet80_F);
-  // jetpbpb[0]->SetBranchAddress("HLT_HIJet80_v7_Prescl",&jet80_p_F);
+  jetpbpb[0]->SetBranchAddress("",&jet40_F);
+  jetpbpb[0]->SetBranchAddress("",&jet40_p_F);
+  jetpbpb[0]->SetBranchAddress("",&jet60_F);
+  jetpbpb[0]->SetBranchAddress("",&jet60_p_F);
+  jetpbpb[0]->SetBranchAddress("",&jet80_F);
+  jetpbpb[0]->SetBranchAddress("",&jet80_p_F);
+  jetpbpb[0]->SetBranchAddress("",&jet100_F);
+  jetpbpb[0]->SetBranchAddress("",&jet100_p_F);
   jetpbpb[0]->SetBranchAddress("L1_SingleJet36_BptxAND",&L1_sj36_F);
   jetpbpb[0]->SetBranchAddress("L1_SingleJet36_BptxAND_Prescl",&L1_sj36_p_F);
   jetpbpb[0]->SetBranchAddress("L1_SingleJet52_BptxAND",&L1_sj52_F);
@@ -205,87 +210,10 @@ void runForest_histosJESJER(int startfile = 0,
   TFile *fout = new TFile(kFoname.c_str(),"RECREATE");
   fout->cd();
 
-  TH1F * hJER_pt[nbins_pt][ncen];
-  TH1F * hJER_eta[nbins_eta][ncen];
-  TH1F * hpthat[ncen];
-  TH1F * hpT[ncen];
-  TH2F * hresponse_matrix[ncen];
-  TH1F * hcent = new TH1F("hcent","",200, 0, 200);
 
-  for(int i = 0;i<ncen;++i){
 
-    hpthat[i] = new TH1F(Form("hpthat_cent%d",i),"",1000, 0, 1000);
-    hpT[i] = new TH1F(Form("hpT_cent%d",i),"",1000, 0, 1000);
-    hresponse_matrix[i] = new TH2F(Form("hresponse_matrix_cent%d",i),"",1000, 0, 1000, 1000, 0, 1000);
-    
-    for(int bin = 0; bin<nbins_pt; ++bin){
-      hJER_pt[bin][i] = new TH1F(Form("hJER_ptbin_%d_cent%d",bin, i),Form("%d < pt < %d, %d-%d centrality", ptbins[bin], ptbins[bin+1], centbins[i], centbins[i+1]),150, 0, 3);
-    }
-    for(int bin = 0; bin<nbins_eta; ++bin){
-      hJER_eta[bin][i] = new TH1F(Form("hJER_etabin_%d_cent%d", bin, i),Form("%2.2f < eta < %2.2f, %d-%d centrality", etabins[bin], etabins[bin+1], centbins[i], centbins[i+1]),150, 0, 3);
-    }
-    
-  }
 
   
-  // now start the event loop for each file. 
-  
-  if(printDebug) cout<<"Running through all the events now"<<endl;
-  Long64_t nentries = jetpbpb[0]->GetEntries();
-  if(printDebug) nentries = 10;
-  TRandom rnd;
-
-  for(int nEvt = 0; nEvt < nentries; ++ nEvt) {
-
-    if(nEvt%10000 == 0)cout<<nEvt<<"/"<<nentries<<endl;
-    if(printDebug)cout<<"nEvt = "<<nEvt<<endl;
-    
-    jetpbpb[0]->GetEntry(nEvt);
-    jetpbpb[1]->GetEntry(nEvt);
-    jetpbpb[2]->GetEntry(nEvt);
-    //jetpbpb[4]->GetEntry(nEvt);
-    jetpbpb[3]->GetEntry(nEvt);
-    
-    if(pcollisionEventSelection_F==0) continue; 
-    if(fabs(vz_F)>15) continue;
-
-    hcent->Fill(hiBin_F);
-    
-    int cBin = findBin(hiBin_F);//tells us the centrality of the event. 
-    if(cBin == -1) continue;
-    if(printDebug) cout<<"cBin = "<<cBin<<endl;
-    
-    for( int jet = 0; jet<nref_F; jet++ ){
-
-      if( fabs(eta_F[jet]) > 2.0 ) continue;
-      //if( subid_F[jet] != 0) continue;
-      if( refdrjt_F[jet] > 0.3 ) continue;
-      if( pt_F[jet] > 3.0 * pthat_F ) continue;
-
-      Float_t genpt = refpt_F[jet];
-      Float_t recpt = pt_F[jet];
-      Float_t rawpt = rawpt_F[jet];
-
-      hresponse_matrix[cBin]->Fill(genpt, recpt);
-
-      hpT[cBin]->Fill(recpt);
-      
-      int ptbin = 0;
-      for(int bin = 0; bin<nbins_pt; ++bin){
-	if(genpt > ptbins[bin]) ptbin = bin;
-      }
-      hJER_pt[ptbin][cBin]->Fill((float)recpt/genpt);
-      
-      int etabin = 0;
-      for(int bin = 0; bin<nbins_eta; ++bin){
-	if(eta_F[jet] > etabins[bin]) etabin = bin;
-      }
-      hJER_eta[etabin][cBin]->Fill((float)recpt/genpt);
-
-    }// jet loop
-    
-  }// event loop
-
   fout->Write();
   
   timer.Stop();
@@ -293,4 +221,5 @@ void runForest_histosJESJER(int startfile = 0,
   cout<<"CPU time (min)  = "<<(Float_t)timer.CpuTime()/60<<endl;
   cout<<"Real time (min) = "<<(Float_t)timer.RealTime()/60<<endl;
   
-}//macro end
+
+}

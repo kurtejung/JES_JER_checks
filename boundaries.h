@@ -1,3 +1,39 @@
+#include <iostream>
+#include <stdio.h>
+#include <fstream>
+#include <sstream>
+#include <TH1F.h>
+#include <TH1F.h>
+#include <TH2F.h>
+#include <TFile.h>
+#include <TTree.h>
+#include <TF1.h>
+#include <TCanvas.h>
+#include <TLegend.h>
+#include <TGraphErrors.h>
+#include <TGraphAsymmErrors.h>
+#include <TH1.h>
+#include <TH2.h>
+#include <TH3.h>
+#include <TFile.h>
+#include <TNtuple.h>
+#include <TStyle.h>
+#include <TStopwatch.h>
+#include <TRandom3.h>
+#include <TChain.h>
+#include <TProfile.h>
+#include <TStopwatch.h>
+#include <TEventList.h>
+#include <TSystem.h>
+#include <TCut.h>
+#include <cstdlib>
+#include <cmath>
+#include "TLegend.h"
+#include "TLatex.h"
+#include "TMath.h"
+#include "TLine.h"
+
+
 // boundaries of the pt bins, cent bins and eta bins for the runForest and plot macros.
 
 static const double pthat[12] = {15, 30, 50, 80, 120, 170, 220, 280, 370, 460, 540, 2000};
@@ -58,4 +94,61 @@ int findBin(int bin)
   else if(bin>=60  && bin<100 )ibin=2; //! 30-50%
   else if(bin>=100  && bin<200 )ibin=3; //! 50-100%
   return ibin;
+}
+
+
+
+#define pi 3.14159265
+
+float deltaphi(float phi1, float phi2)
+{
+  //float pi=TMath::Pi();
+  
+  float dphi = TMath::Abs(phi1 - phi2);
+  if(dphi > pi)dphi -= 2*pi;
+
+  return TMath::Abs(dphi);
+}
+//static const int nbins_pt = 14;
+//static const double boundaries_pt[nbins_pt+1] = {
+//  49, 56, 64, 74, 84, 97, 114, 133,
+//  153, 174, 196, 220, 245, 272, 300
+//};
+
+//these are the only radii we are interested for the RAA analysis: 2,3,4,5
+//static const int no_radius = 3; 
+//static const int list_radius[no_radius] = {2,3,4};
+
+
+float deltaR(float eta1, float phi1, float eta2, float phi2)
+{
+  float deta = eta1 - eta2;
+  float dphi = fabs(phi1 - phi2);
+  if(dphi > pi)dphi -= 2*pi;
+  float dr = sqrt(pow(deta,2) + pow(dphi,2));
+  return dr;
+}
+
+// divide by bin width
+void divideBinWidth(TH1 *h){
+  h->Sumw2();
+  for (int i=0;i<=h->GetNbinsX();i++){
+    Float_t val = h->GetBinContent(i);
+    Float_t valErr = h->GetBinError(i);
+    val/=h->GetBinWidth(i);
+    valErr/=h->GetBinWidth(i);
+    h->SetBinContent(i,val);
+    h->SetBinError(i,valErr);
+  }//binsX loop 
+  h->GetXaxis()->CenterTitle();
+  h->GetYaxis()->CenterTitle();
+}
+
+struct Jet{
+  int id;
+  float pt;
+};
+bool compare_pt(Jet jet1, Jet jet2);
+bool compare_pt(Jet jet1, Jet jet2){
+  return jet1.pt > jet2.pt;
 }
