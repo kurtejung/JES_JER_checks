@@ -127,6 +127,7 @@ void Validate_Data_JetsPP(int startfile = 0,
   int jet60_F;
   int jet80_F;
   int jet100_F;
+  int jetMB_F;
   int L1_sj36_F;
   int L1_sj52_F;
   int L1_sj36_p_F;
@@ -135,6 +136,7 @@ void Validate_Data_JetsPP(int startfile = 0,
   int jet60_p_F;
   int jet80_p_F;
   int jet100_p_F;
+  int jetMB_p_F;
   float vz_F;
   int evt_F;
   int run_F;
@@ -194,6 +196,8 @@ void Validate_Data_JetsPP(int startfile = 0,
   jetpbpb[2]->SetBranchAddress("eMax",eMax_F);
   jetpbpb[2]->SetBranchAddress("muSum",muSum_F);
   jetpbpb[2]->SetBranchAddress("muMax",muMax_F);
+  jetpbpb[0]->SetBranchAddress("",&jetMB_F);
+  jetpbpb[0]->SetBranchAddress("",&jetMB_p_F);  
   jetpbpb[0]->SetBranchAddress("",&jet40_F);
   jetpbpb[0]->SetBranchAddress("",&jet40_p_F);
   jetpbpb[0]->SetBranchAddress("",&jet60_F);
@@ -225,6 +229,11 @@ void Validate_Data_JetsPP(int startfile = 0,
     }
   }
 
+  TH1F * hMBSpectra = new TH1F("hMBSpectra","",100, 0, 500);
+  TH1F * hJet40andMB = new TH1F("hJet40andMB","",100, 0, 500);
+  TH1F * hJet60andMB = new TH1F("hJet60andMB","",100, 0, 500);
+  TH1F * hJet80andMB = new TH1F("hJet80andMB","",100, 0, 500);
+  TH1F * hJet100andMB = new TH1F("hJet100andMB","",100, 0, 500);  
 
   if(printDebug) cout<<"Running through all the events now"<<endl;
   Long64_t nentries = jetpbpb[0]->GetEntries();
@@ -245,6 +254,12 @@ void Validate_Data_JetsPP(int startfile = 0,
     if(pcollisionEventSelection_F==0) continue;
     // if(pHBHENoiseFilter_F == 0) continue;
     if(fabs(vz_F)>15) continue;
+
+    if(jetMB_F) hMBSpectra->Fill(pt_F[0]);
+    if(jetMB_F && jet40_F) hJet40andMB->Fill(pt_F[0]);
+    if(jetMB_F && jet60_F) hJet60andMB->Fill(pt_F[0]);
+    if(jetMB_F && jet80_F) hJet80andMB->Fill(pt_F[0]);
+    if(jetMB_F && jet100_F) hJet100andMB->Fill(pt_F[0]);
 
     float Aj = (float)(pt_F[0]-pt_F[1])/(pt_F[0]+pt_F[1]);
     float DijetRel = (float)(2 + Aj)/(2 - Aj);
