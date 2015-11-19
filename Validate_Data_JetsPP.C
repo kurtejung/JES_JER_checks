@@ -210,9 +210,59 @@ void Validate_Data_JetsPP(int startfile = 0,
   TFile *fout = new TFile(kFoname.c_str(),"RECREATE");
   fout->cd();
 
+  // Add the histograms necessary for the validation,
+  // Aj (eta bins), Relative Response (eta bins), PF cands, rechits,
+  // dijets are selected by delta phi > 2 pi / 3
+  // there is also an alpha cut off which is pt third / pt avg < 0.2
+
+  TH1F * hRelResponse[nbins_pt][nbins_eta];
+  TH1F * hAj[nbins_pt][nbins_eta];
+
+  for(int npt = 0; npt<nbins_pt; ++npt){
+    for(int neta = 0; neta<nbins_eta; ++neta){
+      hRelResponse[npt][neta] = new TH1F(Form("hRelResponse_ptbin%d_etabin%d",npt, eta),Form("Relative Response in %2.2f < pT < %2.2f, %2.2f < #eta_{LeadJet} < %2.2f", ptbins[npt], ptbins[npt+1], etabins[neta], etabins[neta+1]),300, -3, 3);
+      hAj[npt][neta] = new TH1F(Form("hAj_ptbin%d_etabin%d",npt, eta),Form("Aj in %2.2f < p_{T}^{avg} < %2.2f, %2.2f < #eta_{LeadJet} < %2.2f", ptbins[npt], ptbins[npt+1], etabins[neta], etabins[neta+1]),300, -3, 3);
+    }
+  }
 
 
+  if(printDebug) cout<<"Running through all the events now"<<endl;
+  Long64_t nentries = jetpbpb[0]->GetEntries();
+  if(printDebug) nentries = 10;
+  TRandom rnd;
 
+  for(int nEvt = 0; nEvt < nentries; ++ nEvt) {
+
+    if(nEvt%10000 == 0)cout<<nEvt<<"/"<<nentries<<endl;
+    if(printDebug)cout<<"nEvt = "<<nEvt<<endl;
+    
+    jetpbpb[0]->GetEntry(nEvt);
+    jetpbpb[1]->GetEntry(nEvt);
+    jetpbpb[2]->GetEntry(nEvt);
+    //jetpbpb[4]->GetEntry(nEvt);
+    jetpbpb[3]->GetEntry(nEvt);
+    
+    if(pcollisionEventSelection_F==0) continue;
+    // if(pHBHENoiseFilter_F == 0) continue;
+    if(fabs(vz_F)>15) continue;
+
+    float Aj = (float)(pt_F[0]-pt_F[1])/(pt_F[0]+pt_F[1]);
+    float DijetRel = (float)(2 + Aj)/(2 - Aj);
+
+    int binpt = -1, bineta = -1;
+    for(int npt = 0; npt<nbins_pt; ++npt){
+      if((pt_F[0]+pt_F[1]) > ptbins[npt]) binpt = npt;
+    }
+    if(binpt == -1) continue;
+    for(int neta = 0; neta<nbins_eta; ++neta){
+      if(eta_F[0] > etabins[eta]) bineta = neta;      
+    }
+    if(bineta == -1) continue;
+
+    hRelResponse[binpt][bineta]->Fill(DijetRel);
+    hAj[binpt][bineta]->Fill(Aj);
+
+  }
   
   fout->Write();
   
