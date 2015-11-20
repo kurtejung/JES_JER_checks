@@ -200,7 +200,7 @@ void Validate_Jets(int startfile = 0,
   jtTree[2]->SetBranchAddress("eMax",eMax_F);
   jtTree[2]->SetBranchAddress("muSum",muSum_F);
   jtTree[2]->SetBranchAddress("muMax",muMax_F);
-  jtTree[0]->SetBranchAddress("HLT_L1MinimumBiasHF1AND_v1",&jetMB_F);
+  jtTree[0]->SetBranchAddress("HLT_L1MinimumBiasHF1OR_v1",&jetMB_F);
   //jtTree[0]->SetBranchAddress("",&jetMB_p_F);  
   jtTree[0]->SetBranchAddress(Form("HLT_AK4%sJet40_Eta5p1_v1", jetType.c_str()),&jet40_F);
   //jtTree[0]->SetBranchAddress("",&jet40_p_F);
@@ -252,6 +252,11 @@ void Validate_Jets(int startfile = 0,
   TH1F * hJet80andMB = new TH1F("hJet80andMB","MB and Jet 80 Spectra;Jet p_{T} GeV/c;counts",100, 0, 500);
   TH1F * hJet100andMB = new TH1F("hJet100andMB","MB and Jet 100 Spectra;Jet p_{T} GeV/c;counts",100, 0, 500);
 
+  TH1F * hJet40 = new TH1F("hJet40","Jet 40 Spectra;Jet p_{T} GeV/c;counts",100, 0, 500);
+  TH1F * hJet60 = new TH1F("hJet60","Jet 60 Spectra;Jet p_{T} GeV/c;counts",100, 0, 500);
+  TH1F * hJet80 = new TH1F("hJet80","Jet 80 Spectra;Jet p_{T} GeV/c;counts",100, 0, 500);
+  TH1F * hJet100 = new TH1F("hJet100","Jet 100 Spectra;Jet p_{T} GeV/c;counts",100, 0, 500);  
+
   TH1F * pt2overpt1 = new TH1F("pt2overpt1","pt2/pt1",100, 0, 2);
 
   if(printDebug) cout<<"Running through all the events now"<<endl;
@@ -280,6 +285,12 @@ void Validate_Jets(int startfile = 0,
     if(jetMB_F && jet80_F) hJet80andMB->Fill(pt_F[0]);
     if(jetMB_F && jet100_F) hJet100andMB->Fill(pt_F[0]);
 
+    if(jet40_F) hJet40->Fill(pt_F[0]);
+    if(jet60_F) hJet60->Fill(pt_F[0]);
+    if(jet80_F) hJet80->Fill(pt_F[0]);
+    if(jet100_F) hJet100->Fill(pt_F[0]);
+
+    
     float Aj = (float)(pt_F[0]-pt_F[1])/(pt_F[0]+pt_F[1]);
     float ptAvg = (float)(pt_F[0]+pt_F[1])/2;
     float B = (float)(pt_F[0] - pt_F[1])/ptAvg;
