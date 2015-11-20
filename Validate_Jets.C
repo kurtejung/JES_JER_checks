@@ -8,13 +8,13 @@
 using namespace std;
 
 void Validate_Jets(int startfile = 0,
-		   int endfile = 1,
+		   int endfile = 10,
 		   int radius = 4,
 		   std::string coll= "PP",
-		   std::string run= "Data",
+		   std::string run= "MC",
 		   std::string jetType= "PF",
-		   std::string algo= "Pu",
-		   std::string kFoname="test")
+		   std::string algo= "",
+		   std::string kFoname="PromptForest")
 {
 
   TStopwatch timer;
@@ -30,7 +30,7 @@ void Validate_Jets(int startfile = 0,
 
   bool doBjets = false;
   bool skipPho50 = true;
-  bool printDebug = false;
+  bool printDebug = true;
   bool doDijetImbalance = false;
   if(printDebug)cout<<"radius = "<<radius<<endl;
   
@@ -234,6 +234,7 @@ void Validate_Jets(int startfile = 0,
   std::string rad = Form("%d",radius);
   
   TFile *fout = new TFile((kFoname+coll+"_"+run+"_ak"+algo+rad+jetType+".root").c_str(),"RECREATE");
+  //TFile *fout = new TFile(kFoname.c_str(),"RECREATE");
   fout->cd();
 
   // Add the histograms necessary for the validation,
@@ -315,6 +316,10 @@ void Validate_Jets(int startfile = 0,
   
   TH1F * pt2overpt1 = new TH1F("pt2overpt1","pt2/pt1",100, 0, 2);
 
+  TH1F * hJetEta = new TH1F("hJetEta","",60, -5, +5);
+  TH1F * hJetPhi = new TH1F("hJetPhi","",60, -5, +5);
+  TH1F * hJetpT = new TH1F("hJetpT","",60, -5, +5);
+  
   if(printDebug) cout<<"Running through all the events now"<<endl;
   Long64_t nentries = jtTree[0]->GetEntries();
   if(printDebug) nentries = 10;
@@ -331,10 +336,10 @@ void Validate_Jets(int startfile = 0,
     //jtTree[4]->GetEntry(nEvt);
     jtTree[3]->GetEntry(nEvt);
     
-    if(skipPho50 && photon50_F) continue;
-    if(pcollisionEventSelection_F==0) continue;
+    //if(skipPho50 && photon50_F) continue;
+    //if(pcollisionEventSelection_F==0) continue;
     // if(pHBHENoiseFilter_F == 0) continue;
-    if(fabs(vz_F)>15) continue;
+    //if(fabs(vz_F)>15) continue;
 
     hRunN_vs_NJets->Fill(run_F, nref_F);
     
@@ -437,6 +442,11 @@ void Validate_Jets(int startfile = 0,
 	discrCSV->Fill(discr_csv_F[ijet]);
       }
 
+      hJetEta->Fill(eta_F[ijet]);
+      hJetPhi->Fill(phi_F[ijet]);
+
+      hJetpT->Fill(pt_F[ijet]);
+      
       if(fabs(eta_F[ijet]) < 0.5){
 	hJEC_eta0_05->Fill((float)pt_F[ijet]/rawpt_F[ijet]);
 	hJEC_vs_rawpT_eta0_05->Fill(rawpt_F[ijet],(float)pt_F[ijet]/rawpt_F[ijet]);

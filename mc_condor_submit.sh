@@ -5,14 +5,18 @@
 counter=0
 incrementer=1
 
-destination=/mnt/hadoop/cms/store/user/rkunnawa/Run2/JESJER_checks/
-filelist=mergedfile.txt
+destination=/mnt/hadoop/cms/store/user/rkunnawa/Run2/PromptForest_checks/
+filelist=PP_MC_forests.txt
 
 nFiles=`wc -l < $filelist`
 tardir=`pwd`
 radius=4
+coll="PP"
+run="MC"
 algo="Pu"
 jetType="PF"
+
+outputfile="PromptForest${coll}_${run}_ak${radius}${jetType}.root"
 
 echo "nFiles in list: $nFiles"
 while [ $counter -lt $1 ]
@@ -30,7 +34,7 @@ do
         let counter=$1
     fi
 
-    outfile="PbPb_MC_new_ak${algo}${radius}${jetType}_20_eta_20_${endfile}.root"
+    outfile="PromptForest"
     
     # Condor submit file
     cat > subfile <<EOF
@@ -45,7 +49,7 @@ Environment = "HOSTNAME=$HOSTNAME"
 Executable     = mc_condor_run.sh
 +AccountingGroup = "group_cmshi.rkunnawa"
 #+IsMadgraph = 1
-Arguments      = $startfile $endfile $radius $algo $jetType $outfile
+Arguments      = $startfile $endfile $radius $coll $run $jetType $algo $outfile
 # input files. in this case, there are none.
 Input          = /dev/null
 # log files

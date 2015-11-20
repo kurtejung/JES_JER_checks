@@ -17,18 +17,20 @@ gcc --version
 startfile=$1
 endfile=$2
 radius=$3
-algo=$4
-jetType=$5
-outfile=$6
+coll=$4
+run=$5
+jetType=$6
+algo=$7
+outfile=$8
 echo "Processing..."
 
 root -b -l <<EOF
-.x runForest_histosJESJER.C+($startfile,$endfile,$radius, "$algo", "$jetType","$outfile")
+.x Validate_Jets.C+($startfile,$endfile,$radius,"$coll", "$run", "$jetType", "$algo","$outfile")
 .q
 EOF
 
-# root -b -q RAA_read_mc_pbpb.C\+\($startfile,$endfile\)
-mv $outfile /mnt/hadoop/cms/store/user/rkunnawa/Run2/JESJER_checks/.
+mv $outputfile /mnt/hadoop/cms/store/user/rkunnawa/Run2/PromptForest_checks/.
+
 
 echo "Done!"
 
