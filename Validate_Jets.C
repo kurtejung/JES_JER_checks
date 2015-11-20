@@ -218,8 +218,8 @@ void Validate_Jets(int startfile = 0,
   std::string rad = Form("%d",radius);
   
   TFile *fout;
-  if(coll == "PbPb") fout= new TFile((kFoname+coll+run+"ak"+algo+rad+jetType+".root").c_str(),"RECREATE");
-  if(coll == "PP") fout= new TFile((kFoname+coll+run+"ak"+rad+jetType+".root").c_str(),"RECREATE");
+  if(coll == "PbPb") fout= new TFile((kFoname+coll+"_"+run+"_ak"+algo+rad+jetType+".root").c_str(),"RECREATE");
+  if(coll == "PP") fout= new TFile((kFoname+coll+"_"+run+"_ak"+rad+jetType+".root").c_str(),"RECREATE");
   fout->cd();
 
   // Add the histograms necessary for the validation,
@@ -236,6 +236,9 @@ void Validate_Jets(int startfile = 0,
   //     hAj[npt][neta] = new TH1F(Form("hAj_ptbin%d_etabin%d",npt, neta),Form("Aj in %d < p_{T}^{avg} < %d, %2.2f < #eta_{LeadJet} < %2.2f", ptbins[npt], ptbins[npt+1], etabins[neta], etabins[neta+1]),300, -3, 3);
   //   }
   // }
+
+  // Add the Jet pT spectra histograms
+  //TH1F * hJtpt[nbins_cent+1] = new TH1F("hJtpt","Jet Spectra",1000, 0, 1000);
 
   TH1F * hRelResponse_40_pt_80 = new TH1F("hRelResponse_40_pt_80","Relative Response, 40 < p_{T}^{avg} < 80, |#eta|<2;#frac{2+B}{2-B}, B = #frac{p_{T}^{Lead} - p_{T}^{subLead}}{p_{T}^{avg}};counts",300, -3, 3);
   TH1F * hRelResponse_80_pt_120 = new TH1F("hRelResponse_80_pt_120","Relative Response, 80 < p_{T}^{avg} < 120, |#eta|<2;#frac{2+B}{2-B}, B = #frac{p_{T}^{Lead} - p_{T}^{subLead}}{p_{T}^{avg}};counts",300, -3, 3);
