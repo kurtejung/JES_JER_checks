@@ -200,7 +200,7 @@ void Validate_Jets(int startfile = 0,
   jtTree[2]->SetBranchAddress("eMax",eMax_F);
   jtTree[2]->SetBranchAddress("muSum",muSum_F);
   jtTree[2]->SetBranchAddress("muMax",muMax_F);
-  jtTree[0]->SetBranchAddress("HLT_L1MinimumBiasHF1OR_v1",&jetMB_F);
+  jtTree[0]->SetBranchAddress("HLT_L1MinimumBiasHF1OR_part_v1",&jetMB_F);
   //jtTree[0]->SetBranchAddress("",&jetMB_p_F);  
   jtTree[0]->SetBranchAddress(Form("HLT_AK4%sJet40_Eta5p1_v1", jetType.c_str()),&jet40_F);
   //jtTree[0]->SetBranchAddress("",&jet40_p_F);
