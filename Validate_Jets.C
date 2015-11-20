@@ -31,6 +31,7 @@ void Validate_Jets(int startfile = 0,
   bool doBjets = false;
   bool skipPho50 = true;
   bool printDebug = false;
+  bool doDijetImbalance = false;
   if(printDebug)cout<<"radius = "<<radius<<endl;
   
   TDatime date;
@@ -256,12 +257,13 @@ void Validate_Jets(int startfile = 0,
   //TH1F * hRelResponse_40_pt_80 = new TH1F("hRelResponse_40_pt_80","Relative Response, 40 < p_{T}^{avg} < 80, |#eta|<2;#frac{2+B}{2-B}, B = #frac{p_{T}^{Lead} - p_{T}^{subLead}}{p_{T}^{avg}};counts",300, -3, 3);
   //TH1F * hRelResponse_80_pt_120 = new TH1F("hRelResponse_80_pt_120","Relative Response, 80 < p_{T}^{avg} < 120, |#eta|<2;#frac{2+B}{2-B}, B = #frac{p_{T}^{Lead} - p_{T}^{subLead}}{p_{T}^{avg}};counts",300, -3, 3);
   //TH1F * hRelResponse_120_pt_300 = new TH1F("hRelResponse_120_pt_300","Relative Response, 120 < p_{T}^{avg} < 300, |#eta|<2;#frac{2+B}{2-B}, B = #frac{p_{T}^{Lead} - p_{T}^{subLead}}{p_{T}^{avg}};counts",300, -3, 3);
-
-
+  
   TH1F *hRelResponse[nbins_pt];
   TH1F *hRelResponse_outereta[nbins_pt];
   TH1F *hRelResponse_innereta[nbins_pt];
 
+  TH2F * hRunN_vs_NJets = new TH2F("hRunN_Vs_NJets","",719, 261445, 262164, 50, 0, 50);
+  
   for(int npt = 0; npt<nbins_pt; ++npt){
     hRelResponse[npt] = new TH1F(Form("hRelResponse_ptbin%d",npt),Form("Relative Response in %d < p_{T}^{avg} < %d", ptbins[npt], ptbins[npt+1]), 1000, -3, 3);
     hRelResponse_outereta[npt] = new TH1F(Form("hRelResponse_outereta_ptbin%d",npt),Form("Relative Response in %d < p_{T}^{avg} < %d", ptbins[npt], ptbins[npt+1]), 1000, -3, 3);
@@ -272,9 +274,18 @@ void Validate_Jets(int startfile = 0,
   vector<Float_t> j_array_phi;
   vector<Float_t> j_array_eta;
 
-  TH1F * hJEC = new TH1F("hJEC","JEC applied in the forest, |#eta|<2.0",100, 0, 5);
-  TH1F * hJEC_vs_rawpT = new TH1F("hJEC_vs_rawpT","JEC applied in the forest vs raw pT, |#eta|<2.0",500, 0, 1000, 100, 0, 5);
+  TH1F * hJEC_eta0_05 = new TH1F("hJEC_eta0_05","JEC applied in the forest, |#eta|<0.5",100, 0, 5);
+  TH2F * hJEC_vs_rawpT_eta0_05 = new TH2F("hJEC_vs_rawpT_eta0_05","JEC applied in the forest vs raw pT, |#eta|<0.5",200, 0, 200, 100, 0.5, 2);
 
+  TH1F * hJEC_eta05_10 = new TH1F("hJEC_eta05_10","JEC applied in the forest, 0.5<|#eta|<1.0, ",100, 0, 5);
+  TH2F * hJEC_vs_rawpT_eta05_10 = new TH2F("hJEC_vs_rawpT_eta05_10","JEC applied in the forest vs raw pT, 0.5<|#eta|<1.0",200, 0, 200, 100, 0.5, 2);
+
+  TH1F * hJEC_eta10_15 = new TH1F("hJEC_eta10_15","JEC applied in the forest, 1.0<|#eta|<1.5, ",100, 0, 5);
+  TH2F * hJEC_vs_rawpT_eta10_15 = new TH2F("hJEC_vs_rawpT_eta10_15","JEC applied in the forest vs raw pT, 1.0<|#eta|<1.5",200, 0, 200, 100, 0.5, 2);
+
+  TH1F * hJEC_eta15_20 = new TH1F("hJEC_eta15_20","JEC applied in the forest, 1.5<|#eta|<2.0, ",100, 0, 5);
+  TH2F * hJEC_vs_rawpT_eta15_20 = new TH2F("hJEC_vs_rawpT_eta15_20","JEC applied in the forest vs raw pT, 1.5<|#eta|<2.0",200, 0, 200, 100, 0.5, 2);
+  
   Float_t dphi = 0;
   Float_t eta_cut_min = -3;
   Float_t eta_cut_max = 3;
@@ -321,10 +332,12 @@ void Validate_Jets(int startfile = 0,
     jtTree[3]->GetEntry(nEvt);
     
     if(skipPho50 && photon50_F) continue;
-    // if(pcollisionEventSelection_F==0) continue;
+    if(pcollisionEventSelection_F==0) continue;
     // if(pHBHENoiseFilter_F == 0) continue;
     if(fabs(vz_F)>15) continue;
 
+    hRunN_vs_NJets->Fill(run_F, nref_F);
+    
     if(jetMB_F) hMBSpectra->Fill(pt_F[0]);
     if(jetMB_F && jet40_F) hJet40andMB->Fill(pt_F[0]);
     if(jetMB_F && jet60_F) hJet60andMB->Fill(pt_F[0]);
@@ -352,7 +365,7 @@ void Validate_Jets(int startfile = 0,
       }
     }
 
-    if(j_array_pt.size() >=3 ) {
+    if(j_array_pt.size() >=3 && doDijetImbalance) {
     
       for (int ii = 0; ii < j_array_pt.size(); ii++)   {
 	if (j_array_eta[ii] > -1.3 && j_array_eta[ii] < 1.3)  {
@@ -424,9 +437,22 @@ void Validate_Jets(int startfile = 0,
 	discrCSV->Fill(discr_csv_F[ijet]);
       }
 
-      hJEC->Fill((float)pt_F[ijet]/rawpt_F[ijet]);
-      hJEC_vs_rawpT->Fill(rawpt_F[ijet],(float)pt_F[ijet]/rawpt_F[ijet])
-      
+      if(fabs(eta_F[ijet]) < 0.5){
+	hJEC_eta0_05->Fill((float)pt_F[ijet]/rawpt_F[ijet]);
+	hJEC_vs_rawpT_eta0_05->Fill(rawpt_F[ijet],(float)pt_F[ijet]/rawpt_F[ijet]);
+      }
+      if(fabs(eta_F[ijet]) > 0.5 && fabs(eta_F[ijet])<1.0){
+	hJEC_eta05_10->Fill((float)pt_F[ijet]/rawpt_F[ijet]);
+	hJEC_vs_rawpT_eta05_10->Fill(rawpt_F[ijet],(float)pt_F[ijet]/rawpt_F[ijet]);
+      }
+      if(fabs(eta_F[ijet]) > 1.0 && fabs(eta_F[ijet])<1.5){
+	hJEC_eta10_15->Fill((float)pt_F[ijet]/rawpt_F[ijet]);
+	hJEC_vs_rawpT_eta10_15->Fill(rawpt_F[ijet],(float)pt_F[ijet]/rawpt_F[ijet]);
+      }
+      if(fabs(eta_F[ijet]) > 1.5 && fabs(eta_F[ijet])<2){
+	hJEC_eta15_20->Fill((float)pt_F[ijet]/rawpt_F[ijet]);
+	hJEC_vs_rawpT_eta15_20->Fill(rawpt_F[ijet],(float)pt_F[ijet]/rawpt_F[ijet]);
+      }
     }
     
     float Aj = (float)(pt_F[0]-pt_F[1])/(pt_F[0]+pt_F[1]);
