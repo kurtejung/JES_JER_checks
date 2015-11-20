@@ -25,6 +25,11 @@ void Validate_Jets(int startfile = 0,
 
   gStyle->SetOptStat(0);
 
+  //remove pile-up for pp!
+  if(coll=="PP") algo = "";
+
+  bool doBjets = false;
+  bool skipPho50 = true;
   bool printDebug = false;
   if(printDebug)cout<<"radius = "<<radius<<endl;
   
@@ -127,6 +132,9 @@ void Validate_Jets(int startfile = 0,
   float refdrjt_F[1000];
   int refparton_F[1000];
   float pthat_F;
+  float discr_ssvHighEff_F[1000];
+  float discr_ssvHighPur_F[1000];
+  float discr_csv_F[1000];
   int jet40_F;
   int jet60_F;
   int jet80_F;
@@ -141,6 +149,7 @@ void Validate_Jets(int startfile = 0,
   int jet80_p_F;
   int jet100_p_F;
   int jetMB_p_F;
+  int photon50_F;
   float vz_F;
   int evt_F;
   int run_F;
@@ -183,6 +192,11 @@ void Validate_Jets(int startfile = 0,
   if(run == "MC") jtTree[2]->SetBranchAddress("refdrjt",refdrjt_F);
   if(run == "MC") jtTree[2]->SetBranchAddress("refparton_flavor",refparton_F);
   if(run == "MC") jtTree[2]->SetBranchAddress("refpt",refpt_F);
+  if(doBjets){
+    jtTree[2]->SetBranchAddress("discr_ssvHighEff",discr_ssvHighEff_F);
+    jtTree[2]->SetBranchAddress("discr_ssvHighPur",discr_ssvHighPur_F);
+    jtTree[2]->SetBranchAddress("discr_csvSimple",discr_csv_F);
+  }
   jtTree[2]->SetBranchAddress("jtpt",pt_F);
   jtTree[2]->SetBranchAddress("jteta",eta_F);
   jtTree[2]->SetBranchAddress("jtphi",phi_F);
@@ -200,7 +214,7 @@ void Validate_Jets(int startfile = 0,
   jtTree[2]->SetBranchAddress("eMax",eMax_F);
   jtTree[2]->SetBranchAddress("muSum",muSum_F);
   jtTree[2]->SetBranchAddress("muMax",muMax_F);
-  jtTree[0]->SetBranchAddress("HLT_L1MinimumBiasHF1OR_v1",&jetMB_F);
+  jtTree[0]->SetBranchAddress("HLT_L1MinimumBiasHF1OR_part1_v1",&jetMB_F);
   //jtTree[0]->SetBranchAddress("",&jetMB_p_F);  
   jtTree[0]->SetBranchAddress(Form("HLT_AK4%sJet40_Eta5p1_v1", jetType.c_str()),&jet40_F);
   //jtTree[0]->SetBranchAddress("",&jet40_p_F);
@@ -210,6 +224,7 @@ void Validate_Jets(int startfile = 0,
   //jtTree[0]->SetBranchAddress("",&jet80_p_F);
   jtTree[0]->SetBranchAddress(Form("HLT_AK4%sJet100_Eta5p1_v1", jetType.c_str()),&jet100_F);
   //jtTree[0]->SetBranchAddress("",&jet100_p_F);
+  jtTree[0]->SetBranchAddress("HLT_HISinglePhoton50_Eta1p5_v1",&photon50_F);
   // jtTree[0]->SetBranchAddress("L1_SingleJet36_BptxAND",&L1_sj36_F);
   // jtTree[0]->SetBranchAddress("L1_SingleJet36_BptxAND_Prescl",&L1_sj36_p_F);
   // jtTree[0]->SetBranchAddress("L1_SingleJet52_BptxAND",&L1_sj52_F);
@@ -217,9 +232,7 @@ void Validate_Jets(int startfile = 0,
 
   std::string rad = Form("%d",radius);
   
-  TFile *fout;
-  if(coll == "PbPb") fout= new TFile((kFoname+coll+"_"+run+"_ak"+algo+rad+jetType+".root").c_str(),"RECREATE");
-  if(coll == "PP") fout= new TFile((kFoname+coll+"_"+run+"_ak"+rad+jetType+".root").c_str(),"RECREATE");
+  TFile *fout = new TFile((kFoname+coll+"_"+run+"_ak"+algo+rad+jetType+".root").c_str(),"RECREATE");
   fout->cd();
 
   // Add the histograms necessary for the validation,
@@ -252,11 +265,20 @@ void Validate_Jets(int startfile = 0,
   TH1F * hJet80andMB = new TH1F("hJet80andMB","MB and Jet 80 Spectra;Jet p_{T} GeV/c;counts",100, 0, 500);
   TH1F * hJet100andMB = new TH1F("hJet100andMB","MB and Jet 100 Spectra;Jet p_{T} GeV/c;counts",100, 0, 500);
 
-  TH1F * hJet40 = new TH1F("hJet40","Jet 40 Spectra;Jet p_{T} GeV/c;counts",100, 0, 500);
-  TH1F * hJet60 = new TH1F("hJet60","Jet 60 Spectra;Jet p_{T} GeV/c;counts",100, 0, 500);
-  TH1F * hJet80 = new TH1F("hJet80","Jet 80 Spectra;Jet p_{T} GeV/c;counts",100, 0, 500);
-  TH1F * hJet100 = new TH1F("hJet100","Jet 100 Spectra;Jet p_{T} GeV/c;counts",100, 0, 500);  
+  TH1F * hJet40 = new TH1F("hJet40","Jet 40 Leading Spectra;Jet p_{T} GeV/c;counts",100, 0, 500);
+  TH1F * hJet60 = new TH1F("hJet60","Jet 60 Leading Spectra;Jet p_{T} GeV/c;counts",100, 0, 500);
+  TH1F * hJet80 = new TH1F("hJet80","Jet 80 Leading Spectra;Jet p_{T} GeV/c;counts",100, 0, 500);
+  TH1F * hJet100 = new TH1F("hJet100","Jet 100 Leading Spectra;Jet p_{T} GeV/c;counts",100, 0, 500);  
 
+  TH1F *hJet40All = new TH1F("hJet40All","",50,0,300);
+  TH1F *hJet60All = new TH1F("hJet60All","",50,0,300);
+  TH1F *hJet80All = new TH1F("hJet80All","",50,0,300);
+  TH1F *hJet100All = new TH1F("hJet100All","",50,0,300);
+
+  TH1F *discrSSVHE = new TH1F("discrSSVHE","",30,0,6);
+  TH1F *discrSSVHP = new TH1F("discrSSVHP","",30,0,6);
+  TH1F *discrCSV = new TH1F("discrCSV","",30,0,1);
+  
   TH1F * pt2overpt1 = new TH1F("pt2overpt1","pt2/pt1",100, 0, 2);
 
   if(printDebug) cout<<"Running through all the events now"<<endl;
@@ -275,6 +297,7 @@ void Validate_Jets(int startfile = 0,
     //jtTree[4]->GetEntry(nEvt);
     jtTree[3]->GetEntry(nEvt);
     
+    if(skipPho50 && photon50_F) continue;
     // if(pcollisionEventSelection_F==0) continue;
     // if(pHBHENoiseFilter_F == 0) continue;
     if(fabs(vz_F)>15) continue;
@@ -290,6 +313,18 @@ void Validate_Jets(int startfile = 0,
     if(jet80_F) hJet80->Fill(pt_F[0]);
     if(jet100_F) hJet100->Fill(pt_F[0]);
 
+    for(int ijet=0; ijet<nref_F; ijet++){
+        hJet40All->Fill(pt_F[ijet]);
+        hJet60All->Fill(pt_F[ijet]);
+        hJet80All->Fill(pt_F[ijet]);
+        hJet100All->Fill(pt_F[ijet]);
+
+        if(doBjets){
+            discrSSVHE->Fill(discr_ssvHighEff_F[ijet]);
+            discrSSVHP->Fill(discr_ssvHighPur_F[ijet]);
+            discrCSV->Fill(discr_csv_F[ijet]);
+        }
+    }
     
     float Aj = (float)(pt_F[0]-pt_F[1])/(pt_F[0]+pt_F[1]);
     float ptAvg = (float)(pt_F[0]+pt_F[1])/2;
