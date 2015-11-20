@@ -20,6 +20,7 @@
 #include <TStyle.h>
 #include <TStopwatch.h>
 #include <TRandom3.h>
+#include <TRandom.h>
 #include <TChain.h>
 #include <TProfile.h>
 #include <TStopwatch.h>

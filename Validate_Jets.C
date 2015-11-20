@@ -253,9 +253,32 @@ void Validate_Jets(int startfile = 0,
   // Add the Jet pT spectra histograms
   //TH1F * hJtpt[nbins_cent+1] = new TH1F("hJtpt","Jet Spectra",1000, 0, 1000);
 
-  TH1F * hRelResponse_40_pt_80 = new TH1F("hRelResponse_40_pt_80","Relative Response, 40 < p_{T}^{avg} < 80, |#eta|<2;#frac{2+B}{2-B}, B = #frac{p_{T}^{Lead} - p_{T}^{subLead}}{p_{T}^{avg}};counts",300, -3, 3);
-  TH1F * hRelResponse_80_pt_120 = new TH1F("hRelResponse_80_pt_120","Relative Response, 80 < p_{T}^{avg} < 120, |#eta|<2;#frac{2+B}{2-B}, B = #frac{p_{T}^{Lead} - p_{T}^{subLead}}{p_{T}^{avg}};counts",300, -3, 3);
-  TH1F * hRelResponse_120_pt_300 = new TH1F("hRelResponse_120_pt_300","Relative Response, 120 < p_{T}^{avg} < 300, |#eta|<2;#frac{2+B}{2-B}, B = #frac{p_{T}^{Lead} - p_{T}^{subLead}}{p_{T}^{avg}};counts",300, -3, 3);
+  //TH1F * hRelResponse_40_pt_80 = new TH1F("hRelResponse_40_pt_80","Relative Response, 40 < p_{T}^{avg} < 80, |#eta|<2;#frac{2+B}{2-B}, B = #frac{p_{T}^{Lead} - p_{T}^{subLead}}{p_{T}^{avg}};counts",300, -3, 3);
+  //TH1F * hRelResponse_80_pt_120 = new TH1F("hRelResponse_80_pt_120","Relative Response, 80 < p_{T}^{avg} < 120, |#eta|<2;#frac{2+B}{2-B}, B = #frac{p_{T}^{Lead} - p_{T}^{subLead}}{p_{T}^{avg}};counts",300, -3, 3);
+  //TH1F * hRelResponse_120_pt_300 = new TH1F("hRelResponse_120_pt_300","Relative Response, 120 < p_{T}^{avg} < 300, |#eta|<2;#frac{2+B}{2-B}, B = #frac{p_{T}^{Lead} - p_{T}^{subLead}}{p_{T}^{avg}};counts",300, -3, 3);
+
+
+  TH1F *hRelResponse[nbins_pt];
+  TH1F *hRelResponse_outereta[nbins_pt];
+  TH1F *hRelResponse_innereta[nbins_pt];
+
+  for(int npt = 0; npt<nbins_pt; ++npt){
+    hRelResponse[npt] = new TH1F(Form("hRelResponse_ptbin%d",npt),Form("Relative Response in %d < p_{T}^{avg} < %d", ptbins[npt], ptbins[npt+1]), 1000, -3, 3);
+    hRelResponse_outereta[npt] = new TH1F(Form("hRelResponse_outereta_ptbin%d",npt),Form("Relative Response in %d < p_{T}^{avg} < %d", ptbins[npt], ptbins[npt+1]), 1000, -3, 3);
+    hRelResponse_innereta[npt] = new TH1F(Form("hRelResponse_innereta_ptbin%d",npt),Form("Relative Response in %d < p_{T}^{avg} < %d", ptbins[npt], ptbins[npt+1]), 1000, -3, 3);
+  }
+
+  vector<Float_t> j_array_pt;
+  vector<Float_t> j_array_phi;
+  vector<Float_t> j_array_eta;
+
+  TH1F * hJEC = new TH1F("hJEC","JEC applied in the forest, |#eta|<2.0",100, 0, 5);
+  TH1F * hJEC_vs_rawpT = new TH1F("hJEC_vs_rawpT","JEC applied in the forest vs raw pT, |#eta|<2.0",500, 0, 1000, 100, 0, 5);
+
+  Float_t dphi = 0;
+  Float_t eta_cut_min = -3;
+  Float_t eta_cut_max = 3;
+  
   TH1F * hAj = new TH1F("hAj","A_{j};A_{j} = #frac{p_{T}^{Lead} - p_{T}^{subLead}}{p_{T}^{Lead} + p_{T}^{subLead}};counts",300, 0, 2);
   TH1F * hVz = new TH1F("hVz","Primary Vertex Z position;v_{z};counts",200, -20, 20);
   
@@ -313,33 +336,101 @@ void Validate_Jets(int startfile = 0,
     if(jet80_F) hJet80->Fill(pt_F[0]);
     if(jet100_F) hJet100->Fill(pt_F[0]);
 
-    for(int ijet=0; ijet<nref_F; ijet++){
-        hJet40All->Fill(pt_F[ijet]);
-        hJet60All->Fill(pt_F[ijet]);
-        hJet80All->Fill(pt_F[ijet]);
-        hJet100All->Fill(pt_F[ijet]);
+    Float_t dijetbalanceparameter = 0;
+    Float_t referencept = 0;
+    Float_t probept = 0;
+    Float_t probephi = 0;
+    Float_t referencephi = 0;
+    Float_t refeta = 0;
+    Float_t probeeta = 0;
+    
+    for (int  n = 0; n < nref_F; n++) { //APPLYING CUTS AND FILLS NEW ARRAY 
+      if (eta_F[n] > eta_cut_min && eta_F[n] < eta_cut_max) {
+	j_array_pt.push_back(pt_F[n]);
+	j_array_phi.push_back(phi_F[n]);
+	j_array_eta.push_back(eta_F[n]);
+      }
+    }
 
-        if(doBjets){
-            discrSSVHE->Fill(discr_ssvHighEff_F[ijet]);
-            discrSSVHP->Fill(discr_ssvHighPur_F[ijet]);
-            discrCSV->Fill(discr_csv_F[ijet]);
-        }
+    if(j_array_pt.size() >=3 ) {
+    
+      for (int ii = 0; ii < j_array_pt.size(); ii++)   {
+	if (j_array_eta[ii] > -1.3 && j_array_eta[ii] < 1.3)  {
+	  if (j_array_pt[ii] > referencept) {
+	    referencept = j_array_pt[ii];
+	    referencephi = j_array_phi[ii];
+	    refeta = j_array_eta[ii];
+	  }
+	  if (j_array_pt[0]!=referencept) {
+	    probept = j_array_pt[0];
+	    probephi = j_array_phi[0];
+	    probeeta = j_array_eta[0];
+	  }
+	  else {
+	    probept = j_array_pt[1];
+	    probephi = j_array_phi[1];
+	    probeeta = j_array_eta[1];
+	  }
+	}
+      }
+    
+      Float_t alpha = 2*j_array_pt[2]/(j_array_pt[0] + j_array_pt[1]);
+      if (alpha > 0.2) continue;
+      if(referencept == probept && probept != 0)  cout<< "There is a problem!    "<<probept<<endl;
+      if (referencept == 0 || probept == 0) continue;     
+      Float_t averagept = (float)(probept + referencept)/2;
+      float delPhi = deltaphi(probephi, referencephi);
+      if (delPhi < 2.5) continue;
+      dijetbalanceparameter = 2*(probept - referencept)/(probept + referencept);
+
+      int avgpTbin = -1;
+      for(int npt = 0; npt<nbins_pt; ++npt){
+	if(averagept > ptbins[npt]) avgpTbin = npt;
+      }
+      if(avgpTbin !=-1){
+
+	hRelResponse[avgpTbin]->Fill(dijetbalanceparameter);
+    
+	//FILL OUTERETA HISTOGRAMS
+	if (probeeta < -1.3 || probeeta > 1.3){
+	  hRelResponse_outereta[avgpTbin]->Fill(dijetbalanceparameter);
+	}
+
+	if (refeta > -1.3 && refeta < 1.3 && probeeta > -1.3 && probeeta < 1.3) {
+	  Int_t v1 = rand();
+	  Int_t v2 = v1%2;
+	  if (v2 == 1) {
+	    dijetbalanceparameter = 2*(probept - referencept)/(probept + referencept);
+	  }
+	  else  {
+	    dijetbalanceparameter = 2*(referencept - probept)/(probept + referencept);
+	  }
+	  //FILL INNERETA HISTOGRAMS
+	  hRelResponse_innereta[avgpTbin]->Fill(dijetbalanceparameter);
+	}//refeta, probeeta if statement
+      
+      }// avg pT bin
+    }
+    
+    for(int ijet=0; ijet<nref_F; ijet++){
+      hJet40All->Fill(pt_F[ijet]);
+      hJet60All->Fill(pt_F[ijet]);
+      hJet80All->Fill(pt_F[ijet]);
+      hJet100All->Fill(pt_F[ijet]);
+
+      if(doBjets){
+	discrSSVHE->Fill(discr_ssvHighEff_F[ijet]);
+	discrSSVHP->Fill(discr_ssvHighPur_F[ijet]);
+	discrCSV->Fill(discr_csv_F[ijet]);
+      }
+
+      hJEC->Fill((float)pt_F[ijet]/rawpt_F[ijet]);
+      hJEC_vs_rawpT->Fill(rawpt_F[ijet],(float)pt_F[ijet]/rawpt_F[ijet])
+      
     }
     
     float Aj = (float)(pt_F[0]-pt_F[1])/(pt_F[0]+pt_F[1]);
-    float ptAvg = (float)(pt_F[0]+pt_F[1])/2;
-    float B = (float)(pt_F[0] - pt_F[1])/ptAvg;
-    float DijetRel = (float)(2 + B)/(2 - B);
-
     pt2overpt1->Fill((float)pt_F[1]/pt_F[0]);
-
-    
-    if((float)(pt_F[2]/ptAvg) < 0.2 && deltaphi(phi_F[0], phi_F[1]) > (float)2*pi/3){
-      if(ptAvg>=40 && ptAvg<80) hRelResponse_40_pt_80->Fill(DijetRel);
-      if(ptAvg>=80 && ptAvg<120) hRelResponse_80_pt_120->Fill(DijetRel);
-      if(ptAvg>=120 && ptAvg<300) hRelResponse_120_pt_300->Fill(DijetRel);
-    }
-
     hAj->Fill(Aj);
 
     // int binpt = -1, bineta = -1;
@@ -366,6 +457,11 @@ void Validate_Jets(int startfile = 0,
   hJet80Turnon->Divide(hMBSpectra);
   TH1F * hJet100Turnon = (TH1F*)hJet100andMB->Clone("hJet100Turnon");
   hJet100Turnon->Divide(hMBSpectra);
+
+
+  j_array_pt.clear();
+  j_array_phi.clear();
+  j_array_eta.clear();
 
   
   fout->Write();
