@@ -44,12 +44,24 @@ void plot_Validatin_DatavsMC(int radius = 4,
 {
 
   // get the data and MC histograms
-  // these are simple histograms 
-
+  // these are simple histograms
+  TFile * fData = TFile::Open(DataFile.c_str());
+  TH1F * pt2overpt1_Data = (TH1F*)fData->Get("pt2overpt1");
+  TH1F * hJetEta_Data = (TH1F*)fData->Get("hJetEta");
+  TH1F * hJetPhi_Data = (TH1F*)fData->Get("hJetPhi");
+  TH1F * hJetpT_Data = (TH1F*)fData->Get("hJetpT");
+  TH1F * hAj_Data = (TH1F*)fData->Get("hAj");
   
+  TFile * fMC = TFile::Open(MCFile.c_str());
+  TH1F * pt2overpt1_MC = (TH1F*)fMC->Get("pt2overpt1");
+  TH1F * hJetEta_MC = (TH1F*)fMC->Get("hJetEta");
+  TH1F * hJetPhi_MC = (TH1F*)fMC->Get("hJetPhi");
+  TH1F * hJetpT_MC = (TH1F*)fMC->Get("hJetpT");
+  TH1F * hAj_MC = (TH1F*)fMC->Get("hAj");
   
-
   // plot them on top of each other. 
-
+  TCanvas * cAj = new TCanvas("Aj","",800,600);
+  
+    
 
 }
