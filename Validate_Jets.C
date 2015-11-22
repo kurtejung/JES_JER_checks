@@ -8,11 +8,11 @@
 using namespace std;
 
 void Validate_Jets(int startfile = 0,
-		   int endfile = 10,
+		   int endfile = 16,
 		   int radius = 4,
 		   std::string coll= "PP",
-		   std::string run= "MC",
-		   std::string jetType= "PF",
+		   std::string run= "Data",
+		   std::string jetType= "Calo",
 		   std::string algo= "",
 		   std::string kFoname="PromptForest")
 {
@@ -25,13 +25,10 @@ void Validate_Jets(int startfile = 0,
 
   gStyle->SetOptStat(0);
 
-  //remove pile-up for pp!
-  if(coll=="PP") algo = "";
-
   bool doBjets = false;
   bool skipPho50 = true;
-  bool printDebug = true;
-  bool doDijetImbalance = false;
+  bool printDebug = false;
+  bool doDijetImbalance = true;
   if(printDebug)cout<<"radius = "<<radius<<endl;
   
   TDatime date;
@@ -232,9 +229,9 @@ void Validate_Jets(int startfile = 0,
   // jtTree[0]->SetBranchAddress("L1_SingleJet52_BptxAND_Prescl",&L1_sj52_p_F);
 
   std::string rad = Form("%d",radius);
+  std::string end = Form("%d",endfile);
   
-  TFile *fout = new TFile((kFoname+coll+"_"+run+"_ak"+algo+rad+jetType+".root").c_str(),"RECREATE");
-  //TFile *fout = new TFile(kFoname.c_str(),"RECREATE");
+  TFile *fout = new TFile((kFoname+coll+"_"+run+"_ak"+algo+rad+jetType+"_"+end+".root").c_str(),"RECREATE");
   fout->cd();
 
   // Add the histograms necessary for the validation,
@@ -276,16 +273,31 @@ void Validate_Jets(int startfile = 0,
   vector<Float_t> j_array_eta;
 
   TH1F * hJEC_eta0_05 = new TH1F("hJEC_eta0_05","JEC applied in the forest, |#eta|<0.5",100, 0, 5);
-  TH2F * hJEC_vs_rawpT_eta0_05 = new TH2F("hJEC_vs_rawpT_eta0_05","JEC applied in the forest vs raw pT, |#eta|<0.5",200, 0, 200, 100, 0.5, 2);
+  TH2F * hJEC_vs_rawpT_eta0_05 = new TH2F("hJEC_vs_rawpT_eta0_05","JEC applied in the forest vs raw pT, |#eta|<0.5",200, 0, 200, 300, 0.5, 2);
 
   TH1F * hJEC_eta05_10 = new TH1F("hJEC_eta05_10","JEC applied in the forest, 0.5<|#eta|<1.0, ",100, 0, 5);
-  TH2F * hJEC_vs_rawpT_eta05_10 = new TH2F("hJEC_vs_rawpT_eta05_10","JEC applied in the forest vs raw pT, 0.5<|#eta|<1.0",200, 0, 200, 100, 0.5, 2);
+  TH2F * hJEC_vs_rawpT_eta05_10 = new TH2F("hJEC_vs_rawpT_eta05_10","JEC applied in the forest vs raw pT, 0.5<|#eta|<1.0",200, 0, 200, 300, 0.5, 2);
 
   TH1F * hJEC_eta10_15 = new TH1F("hJEC_eta10_15","JEC applied in the forest, 1.0<|#eta|<1.5, ",100, 0, 5);
-  TH2F * hJEC_vs_rawpT_eta10_15 = new TH2F("hJEC_vs_rawpT_eta10_15","JEC applied in the forest vs raw pT, 1.0<|#eta|<1.5",200, 0, 200, 100, 0.5, 2);
+  TH2F * hJEC_vs_rawpT_eta10_15 = new TH2F("hJEC_vs_rawpT_eta10_15","JEC applied in the forest vs raw pT, 1.0<|#eta|<1.5",200, 0, 200, 300, 0.5, 2);
 
   TH1F * hJEC_eta15_20 = new TH1F("hJEC_eta15_20","JEC applied in the forest, 1.5<|#eta|<2.0, ",100, 0, 5);
-  TH2F * hJEC_vs_rawpT_eta15_20 = new TH2F("hJEC_vs_rawpT_eta15_20","JEC applied in the forest vs raw pT, 1.5<|#eta|<2.0",200, 0, 200, 100, 0.5, 2);
+  TH2F * hJEC_vs_rawpT_eta15_20 = new TH2F("hJEC_vs_rawpT_eta15_20","JEC applied in the forest vs raw pT, 1.5<|#eta|<2.0",200, 0, 200, 300, 0.5, 2);
+
+
+  TH1F * hJEC_eta20_25 = new TH1F("hJEC_eta20_25","JEC applied in the forest, 2.0<|#eta|<2.5, ",100, 0, 5);
+  TH2F * hJEC_vs_rawpT_eta20_25 = new TH2F("hJEC_vs_rawpT_eta20_25","JEC applied in the forest vs raw pT, 2.0<|#eta|<2.5",200, 0, 200, 100, 0.5, 2);
+
+  TH1F * hJEC_eta25_30 = new TH1F("hJEC_eta25_30","JEC applied in the forest, 2.5<|#eta|<3.0, ",100, 0, 5);
+  TH2F * hJEC_vs_rawpT_eta25_30 = new TH2F("hJEC_vs_rawpT_eta25_30","JEC applied in the forest vs raw pT, 2.5<|#eta|<3.0",200, 0, 200, 100, 0.5, 2);
+
+  TH1F * hJEC_eta30_35 = new TH1F("hJEC_eta30_35","JEC applied in the forest, 3.0<|#eta|<3.5, ",100, 0, 5);
+  TH2F * hJEC_vs_rawpT_eta30_35 = new TH2F("hJEC_vs_rawpT_eta30_35","JEC applied in the forest vs raw pT, 3.0<|#eta|<3.5",200, 0, 200, 100, 0.5, 2);
+
+  TH1F * hJEC_eta35_40 = new TH1F("hJEC_eta35_40","JEC applied in the forest, 3.5<|#eta|<4.0, ",100, 0, 5);
+  TH2F * hJEC_vs_rawpT_eta35_40 = new TH2F("hJEC_vs_rawpT_eta35_40","JEC applied in the forest vs raw pT, 3.5<|#eta|<4.0",200, 0, 200, 100, 0.5, 2);
+
+
   
   Float_t dphi = 0;
   Float_t eta_cut_min = -3;
@@ -318,8 +330,9 @@ void Validate_Jets(int startfile = 0,
 
   TH1F * hJetEta = new TH1F("hJetEta","",60, -5, +5);
   TH1F * hJetPhi = new TH1F("hJetPhi","",60, -5, +5);
-  TH1F * hJetpT = new TH1F("hJetpT","",60, -5, +5);
-  
+  TH1F * hJetpT = new TH1F("hJetpT","",400, 0, 600);
+  TH1F * hDeltaPhi = new TH1F("hDeltaPhi","delta phi leading and subleading jets",350, 0, +3);
+
   if(printDebug) cout<<"Running through all the events now"<<endl;
   Long64_t nentries = jtTree[0]->GetEntries();
   if(printDebug) nentries = 10;
@@ -335,12 +348,13 @@ void Validate_Jets(int startfile = 0,
     jtTree[2]->GetEntry(nEvt);
     //jtTree[4]->GetEntry(nEvt);
     jtTree[3]->GetEntry(nEvt);
-    
-    //if(skipPho50 && photon50_F) continue;
-    //if(pcollisionEventSelection_F==0) continue;
-    // if(pHBHENoiseFilter_F == 0) continue;
-    //if(fabs(vz_F)>15) continue;
 
+    if(run == "Data"){
+      if(skipPho50 && photon50_F) continue;
+      if(pcollisionEventSelection_F==0) continue;
+      //if(pHBHENoiseFilter_F == 0) continue;
+      if(fabs(vz_F)>15) continue;
+    }
     hRunN_vs_NJets->Fill(run_F, nref_F);
     
     if(jetMB_F) hMBSpectra->Fill(pt_F[0]);
@@ -354,24 +368,28 @@ void Validate_Jets(int startfile = 0,
     if(jet80_F) hJet80->Fill(pt_F[0]);
     if(jet100_F) hJet100->Fill(pt_F[0]);
 
-    Float_t dijetbalanceparameter = 0;
-    Float_t referencept = 0;
-    Float_t probept = 0;
-    Float_t probephi = 0;
-    Float_t referencephi = 0;
-    Float_t refeta = 0;
-    Float_t probeeta = 0;
-    
-    for (int  n = 0; n < nref_F; n++) { //APPLYING CUTS AND FILLS NEW ARRAY 
-      if (eta_F[n] > eta_cut_min && eta_F[n] < eta_cut_max) {
-	j_array_pt.push_back(pt_F[n]);
-	j_array_phi.push_back(phi_F[n]);
-	j_array_eta.push_back(eta_F[n]);
-      }
-    }
+    if(nref_F >=3 && doDijetImbalance) {
+      
+      j_array_pt.clear();
+      j_array_phi.clear();
+      j_array_eta.clear();
 
-    if(j_array_pt.size() >=3 && doDijetImbalance) {
-    
+      Float_t dijetbalanceparameter = 0;
+      Float_t referencept = 0;
+      Float_t probept = 0;
+      Float_t probephi = 0;
+      Float_t referencephi = 0;
+      Float_t refeta = 0;
+      Float_t probeeta = 0;
+      
+      for (int  n = 0; n < nref_F; n++) { //APPLYING CUTS AND FILLS NEW ARRAY 
+	if (eta_F[n] > eta_cut_min && eta_F[n] < eta_cut_max) {
+	  j_array_pt.push_back(pt_F[n]);
+	  j_array_phi.push_back(phi_F[n]);
+	  j_array_eta.push_back(eta_F[n]);
+	}
+      }
+            
       for (int ii = 0; ii < j_array_pt.size(); ii++)   {
 	if (j_array_eta[ii] > -1.3 && j_array_eta[ii] < 1.3)  {
 	  if (j_array_pt[ii] > referencept) {
@@ -391,8 +409,14 @@ void Validate_Jets(int startfile = 0,
 	  }
 	}
       }
-    
+
+      if(printDebug) cout<<"Probe pT       = "<<probept<<endl;
+      if(printDebug) cout<<"reference pT   = "<<referencept<<endl;
+      if(printDebug) cout<<"leading jet pT = "<<j_array_pt[0]<<endl;
+      if(printDebug) cout<<"SubLead jet pT = "<<j_array_pt[1]<<endl;
+      
       Float_t alpha = 2*j_array_pt[2]/(j_array_pt[0] + j_array_pt[1]);
+      if(printDebug) cout<<"alpha = "<<alpha<<endl;
       if (alpha > 0.2) continue;
       if(referencept == probept && probept != 0)  cout<< "There is a problem!    "<<probept<<endl;
       if (referencept == 0 || probept == 0) continue;     
@@ -401,6 +425,8 @@ void Validate_Jets(int startfile = 0,
       if (delPhi < 2.5) continue;
       dijetbalanceparameter = 2*(probept - referencept)/(probept + referencept);
 
+      if(printDebug) cout<<"dijet imbalance parameter = "<<dijetbalanceparameter<<endl;
+      
       int avgpTbin = -1;
       for(int npt = 0; npt<nbins_pt; ++npt){
 	if(averagept > ptbins[npt]) avgpTbin = npt;
@@ -428,7 +454,13 @@ void Validate_Jets(int startfile = 0,
 	}//refeta, probeeta if statement
       
       }// avg pT bin
+
+      j_array_pt.clear();
+      j_array_phi.clear();
+      j_array_eta.clear();
+
     }
+
     
     for(int ijet=0; ijet<nref_F; ijet++){
       hJet40All->Fill(pt_F[ijet]);
@@ -442,10 +474,13 @@ void Validate_Jets(int startfile = 0,
 	discrCSV->Fill(discr_csv_F[ijet]);
       }
 
-      hJetEta->Fill(eta_F[ijet]);
-      hJetPhi->Fill(phi_F[ijet]);
-
-      hJetpT->Fill(pt_F[ijet]);
+      if(nref_F >= 2) hDeltaPhi->Fill(deltaphi(phi_F[0], phi_F[1]));
+      
+      if(pt_F[0]>90.0){
+	hJetEta->Fill(eta_F[ijet]);
+	hJetPhi->Fill(phi_F[ijet]);
+	hJetpT->Fill(pt_F[ijet]);
+      }
       
       if(fabs(eta_F[ijet]) < 0.5){
 	hJEC_eta0_05->Fill((float)pt_F[ijet]/rawpt_F[ijet]);
@@ -463,11 +498,39 @@ void Validate_Jets(int startfile = 0,
 	hJEC_eta15_20->Fill((float)pt_F[ijet]/rawpt_F[ijet]);
 	hJEC_vs_rawpT_eta15_20->Fill(rawpt_F[ijet],(float)pt_F[ijet]/rawpt_F[ijet]);
       }
+      if(fabs(eta_F[ijet]) > 2 && fabs(eta_F[ijet])<2.5){
+	hJEC_eta20_25->Fill((float)pt_F[ijet]/rawpt_F[ijet]);
+	hJEC_vs_rawpT_eta20_25->Fill(rawpt_F[ijet],(float)pt_F[ijet]/rawpt_F[ijet]);
+      }
+      if(fabs(eta_F[ijet]) > 2.5 && fabs(eta_F[ijet])<3){
+	hJEC_eta25_30->Fill((float)pt_F[ijet]/rawpt_F[ijet]);
+	hJEC_vs_rawpT_eta25_30->Fill(rawpt_F[ijet],(float)pt_F[ijet]/rawpt_F[ijet]);
+      }
+      if(fabs(eta_F[ijet]) > 3 && fabs(eta_F[ijet])<3.5){
+	hJEC_eta30_35->Fill((float)pt_F[ijet]/rawpt_F[ijet]);
+	hJEC_vs_rawpT_eta30_35->Fill(rawpt_F[ijet],(float)pt_F[ijet]/rawpt_F[ijet]);
+      }
+      if(fabs(eta_F[ijet]) > 3.5 && fabs(eta_F[ijet])<4){
+	hJEC_eta35_40->Fill((float)pt_F[ijet]/rawpt_F[ijet]);
+	hJEC_vs_rawpT_eta35_40->Fill(rawpt_F[ijet],(float)pt_F[ijet]/rawpt_F[ijet]);
+      }
     }
-    
-    float Aj = (float)(pt_F[0]-pt_F[1])/(pt_F[0]+pt_F[1]);
-    pt2overpt1->Fill((float)pt_F[1]/pt_F[0]);
-    hAj->Fill(Aj);
+
+    if(run == "MC"){
+      if(pt_F[0]>90.0 && pt_F[1] >20.0){
+	float Aj = (float)(pt_F[0]-pt_F[1])/(pt_F[0]+pt_F[1]);
+	pt2overpt1->Fill((float)pt_F[1]/pt_F[0]);
+	hAj->Fill(Aj);
+      }
+    }
+
+    if(run == "Data"){
+      if(jet80_F && pt_F[0]>90.0 && pt_F[1] >20.0){
+	float Aj = (float)(pt_F[0]-pt_F[1])/(pt_F[0]+pt_F[1]);
+	pt2overpt1->Fill((float)pt_F[1]/pt_F[0]);
+	hAj->Fill(Aj);
+      }
+    }
 
     // int binpt = -1, bineta = -1;
     // for(int npt = 0; npt<nbins_pt; ++npt){
@@ -485,20 +548,14 @@ void Validate_Jets(int startfile = 0,
 
   }
 
-  TH1F * hJet40Turnon = (TH1F*)hJet40andMB->Clone("hJet40Turnon");
-  hJet40Turnon->Divide(hMBSpectra);
-  TH1F * hJet60Turnon = (TH1F*)hJet60andMB->Clone("hJet60Turnon");
-  hJet60Turnon->Divide(hMBSpectra);
-  TH1F * hJet80Turnon = (TH1F*)hJet80andMB->Clone("hJet80Turnon");
-  hJet80Turnon->Divide(hMBSpectra);
-  TH1F * hJet100Turnon = (TH1F*)hJet100andMB->Clone("hJet100Turnon");
-  hJet100Turnon->Divide(hMBSpectra);
-
-
-  j_array_pt.clear();
-  j_array_phi.clear();
-  j_array_eta.clear();
-
+  // TH1F * hJet40Turnon = (TH1F*)hJet40andMB->Clone("hJet40Turnon");
+  // hJet40Turnon->Divide(hMBSpectra);
+  // TH1F * hJet60Turnon = (TH1F*)hJet60andMB->Clone("hJet60Turnon");
+  // hJet60Turnon->Divide(hMBSpectra);
+  // TH1F * hJet80Turnon = (TH1F*)hJet80andMB->Clone("hJet80Turnon");
+  // hJet80Turnon->Divide(hMBSpectra);
+  // TH1F * hJet100Turnon = (TH1F*)hJet100andMB->Clone("hJet100Turnon");
+  // hJet100Turnon->Divide(hMBSpectra);
   
   fout->Write();
   

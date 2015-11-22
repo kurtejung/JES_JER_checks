@@ -20,8 +20,8 @@ radius=$3
 coll=$4
 run=$5
 jetType=$6
-algo=$7
-outfile=$8
+outfile=$7
+algo=$8
 echo "Processing..."
 
 root -b -l <<EOF
@@ -29,8 +29,11 @@ root -b -l <<EOF
 .q
 EOF
 
-mv $outputfile /mnt/hadoop/cms/store/user/rkunnawa/Run2/PromptForest_checks/.
+output="PromptForest${coll}_${run}_ak$algo$radius${jetType}_$endfile.root"
 
+echo $output
+
+mv $output /mnt/hadoop/cms/store/user/rkunnawa/Run2/PromptForest_checks/
 
 echo "Done!"
 
