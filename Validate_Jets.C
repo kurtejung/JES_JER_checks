@@ -45,7 +45,8 @@ void Validate_Jets(int startfile = 0,
     instr_Forest>>filename_Forest;
   }
 
-  const int N = 5; //6
+  
+  const int N = 6; // data does not have the runAnalyzer
 
   TChain * jtTree[N];
 
@@ -57,20 +58,26 @@ void Validate_Jets(int startfile = 0,
   if(coll == "PP") dir[2] = Form("ak%d%sJetAnalyzer", radius, jetType.c_str());
   //dir[3] = "akPu3CaloJetAnalyzer";
   dir[3] = "hiEvtAnalyzer";
-  dir[4] = "pfcandanalyzer";
+  if(jetType == "Calo") dir[4] = "rechitanalyzer" ;
+  if(jetType == "PF") dir[4] = "pfcandAnalyzer" ;
+  if(run == "MC") dir[5] = "runAnalyzer";
   // dir[4] = "hltobject";
 
-  string trees[N] = {
-    "HltTree",
-    "HltTree",
-    "t",
-    // "t",
-    "HiTree",
+  string trees[N];
+  trees[0] = "HltTree";
+  trees[1] = "HltTree";
+  trees[2] = "t";
+  // trees[3] = "t";
+  trees[3] = "HiTree";
     // , "jetObjTree"
-    "pfTree"
-  };
+  if(jetType == "Calo") trees[4] = "tower" ;
+  if(jetType == "PF") trees[4] = "pfTree" ;
+  if(run == "MC") trees[5] = "run";
 
-  for(int t = 0;t<N;t++){
+  int NLoop = 5;
+  if(run == "MC") NLoop = 6;
+  
+  for(int t = 0;t<NLoop;t++){
     jtTree[t] = new TChain(string(dir[t]+"/"+trees[t]).data());
   }//tree loop ends
   
@@ -83,7 +90,8 @@ void Validate_Jets(int startfile = 0,
     jtTree[2]->Add(filename_Forest.c_str());
     jtTree[3]->Add(filename_Forest.c_str());
     jtTree[4]->Add(filename_Forest.c_str());
-
+    if(run == "MC") jtTree[5]->Add(filename_Forest.c_str());
+    
     cout<<"filename: "<<filename_Forest<<endl;
     
     if(printDebug)cout << "Tree loaded  " << string(dir[0]+"/"+trees[0]).data() << endl;
@@ -97,14 +105,20 @@ void Validate_Jets(int startfile = 0,
     if(printDebug)cout << "Tree loaded  " << string(dir[4]+"/"+trees[4]).data() << endl;
     if(printDebug)cout << "Entries : " << jtTree[4]->GetEntries() << endl;
 
+    if(run == "MC") {
+      if(printDebug)cout << "Tree loaded  " << string(dir[5]+"/"+trees[5]).data() << endl;
+      if(printDebug)cout << "Entries : " << jtTree[5]->GetEntries() << endl;
+    }
+    
     cout<<"Total number of events loaded in HiForest = "<<jtTree[2]->GetEntries()<<endl;
-
   }
   
   jtTree[2]->AddFriend(jtTree[0]);
   jtTree[2]->AddFriend(jtTree[1]);
   jtTree[2]->AddFriend(jtTree[3]);
   jtTree[2]->AddFriend(jtTree[4]);
+  if(run == "MC") jtTree[2]->AddFriend(jtTree[5]);
+  
   //jtTree[3]->AddFriend(jtTree[0]);
   //jtTree[3]->AddFriend(jtTree[1]);
   //jtTree[3]->AddFriend(jtTree[4]);
@@ -167,15 +181,14 @@ void Validate_Jets(int startfile = 0,
   int pHBHENoiseFilter_F;
   int pprimaryvertexFilter_F;
   int pVertexFilterCutGplus_F;
+  float crossSection_F;
 
   Int_t nPFpart_F;
   Int_t pfId_F[NOBJECT_MAX];
   Float_t pfPt_F[NOBJECT_MAX];
   Float_t pfVsPtInitial_F[NOBJECT_MAX];
-  Float_t pfVsPt_F[NOBJECT_MAX];
   Float_t pfEta_F[NOBJECT_MAX];
   Float_t pfPhi_F[NOBJECT_MAX];
-  Float_t pfArea_F[NOBJECT_MAX];
 
 
   if(jetType == "Calo") {
@@ -183,17 +196,18 @@ void Validate_Jets(int startfile = 0,
     jtTree[4]->SetBranchAddress("et", pfPt_F);
     jtTree[4]->SetBranchAddress("eta", pfEta_F);
     jtTree[4]->SetBranchAddress("phi", pfPhi_F);
-    jtTree[4]->SetBranchAddress("vsArea", pfArea_F);
   }
   if(jetType == "PF") {
     jtTree[4]->SetBranchAddress("nPFpart", &nPFpart_F);
     jtTree[4]->SetBranchAddress("pfId", pfId_F);
     jtTree[4]->SetBranchAddress("pfPt", pfPt_F);
     jtTree[4]->SetBranchAddress("pfVsPtInitial", pfVsPtInitial_F);
-    jtTree[4]->SetBranchAddress("pfVsPt", pfVsPt_F);
     jtTree[4]->SetBranchAddress("pfEta", pfEta_F);
     jtTree[4]->SetBranchAddress("pfPhi", pfPhi_F);
-    jtTree[4]->SetBranchAddress("pfArea", pfArea_F);
+  }
+
+  if(run == "MC"){
+    jtTree[5]->SetBranchAddress("xsec",&crossSection_F);
   }
 
   //float calopt_F[1000];
@@ -389,8 +403,8 @@ void Validate_Jets(int startfile = 0,
 
   if(jetType == "PF"){
     for(int ipf = 0; ipf<PFType; ++ipf){
-      hPFCand_eta_vs_pT[ipf] = new TH2F(Form("hPFCand_eta_vs_pT_%s",PFCandType[ipf]),Form("%s;#eta;candidate p_{T}",PFCandType[ipf]),120, -5, +5, 300, 0, 300);
-      hPFCand_pTscale_insideJet[ipf] = new TH1F(Form("hPFCand_pTscale_insideJet_%s",PFCandType[ipf]),Form("%s;candidate p_{T}/jet p_{T};counts",PFCandType[ipf]),100, 0, 1);
+      hPFCand_eta_vs_pT[ipf] = new TH2F(Form("hPFCand_eta_vs_pT_%s",PFCandType[ipf].c_str()),Form("%s;#eta;candidate p_{T}",PFCandType[ipf].c_str()),120, -5, +5, 300, 0, 300);
+      hPFCand_pTscale_insideJet[ipf] = new TH1F(Form("hPFCand_pTscale_insideJet_%s",PFCandType[ipf].c_str()),Form("%s;candidate p_{T}/jet p_{T};counts",PFCandType[ipf].c_str()),100, 0, 1);
     }
   }
   if(jetType == "Calo"){
@@ -413,33 +427,34 @@ void Validate_Jets(int startfile = 0,
     jtTree[2]->GetEntry(nEvt);
     jtTree[3]->GetEntry(nEvt);
     jtTree[4]->GetEntry(nEvt);
+
+    if(run == "MC") jtTree[5]->GetEntry(nEvt);
     
     if(run == "Data"){
       if(skipPho30 && photon30_F) continue;
       if(pcollisionEventSelection_F==0) continue;
-      //if(pHBHENoiseFilter_F == 0) continue;
+      if(pHBHENoiseFilter_F == 0) continue;
       if(fabs(vz_F)>15) continue;
     }
     hRunN_vs_NJets->Fill(run_F, nref_F);
-
     
     for(int npf = 0; npf<nPFpart_F; ++npf){
 
       if(jetType == "Calo"){
-	hPFCand_eta_vs_pT[0]->Fill(pfEta_F[npt], pfPt_F[npf]);
+	hPFCand_eta_vs_pT[0]->Fill(pfEta_F[npf], pfPt_F[npf]);
 	for(int njet = 0; njet<nref_F; ++njet){
 	  float delR = deltaR(pfEta_F[npf], pfPhi_F[npf], eta_F[njet], phi_F[njet]);
 	  if(delR < (float)radius/10)
-	    hPFCand_eta_vs_pT[0]->Fill((float)(pfPt_F[npf]/pt_F[njet]));	
+	    hPFCand_pTscale_insideJet[0]->Fill((float)(pfPt_F[npf]/pt_F[njet]));	
 	}
       }
 
       if(jetType == "PF"){
-	hPFCand_eta_vs_pT[pfId_F]->Fill(pfEta_F[npt], pfPt_F[npf]);
+	hPFCand_eta_vs_pT[pfId_F[npf]]->Fill(pfEta_F[npf], pfPt_F[npf]);
 	for(int njet = 0; njet<nref_F; ++njet){
 	  float delR = deltaR(pfEta_F[npf], pfPhi_F[npf], eta_F[njet], phi_F[njet]);
 	  if(delR < (float)radius/10)
-	    hPFCand_eta_vs_pT[pfId_F]->Fill((float)(pfPt_F[npf]/pt_F[njet]));	
+	    hPFCand_pTscale_insideJet[pfId_F[npf]]->Fill((float)(pfPt_F[npf]/pt_F[njet])); 
 	}
       }
       
