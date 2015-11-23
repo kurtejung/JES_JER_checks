@@ -25,12 +25,12 @@ void Validate_Jets(int startfile = 0,
 
   gStyle->SetOptStat(0);
 
-  bool doBjets = false;
+  bool doBjets = true;
   std::string bJetString = "";
   if(doBjets) bJetString = "_withBjets";
   bool skipPho30 = true;
-  bool printDebug = true;
-  bool doDijetImbalance = false;
+  bool printDebug = false;
+  bool doDijetImbalance = true;
   if(printDebug)cout<<"radius = "<<radius<<endl;
   
   TDatime date;
