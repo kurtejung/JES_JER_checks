@@ -14,7 +14,7 @@ radius=4
 coll="PP"
 run="MC"
 algo=""
-jetType="Calo"
+jetType="PF"
 
 
 echo "nFiles in list: $nFiles"
