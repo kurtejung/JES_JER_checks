@@ -27,7 +27,7 @@ void Validate_Jets(int startfile = 0,
 
   bool doBjets = false;
   bool skipPho30 = true;
-  bool printDebug = false;
+  bool printDebug = true;
   bool doDijetImbalance = false;
   if(printDebug)cout<<"radius = "<<radius<<endl;
   
@@ -45,7 +45,7 @@ void Validate_Jets(int startfile = 0,
     instr_Forest>>filename_Forest;
   }
 
-  const int N = 4; //6
+  const int N = 5; //6
 
   TChain * jtTree[N];
 
@@ -57,6 +57,7 @@ void Validate_Jets(int startfile = 0,
   if(coll == "PP") dir[2] = Form("ak%d%sJetAnalyzer", radius, jetType.c_str());
   //dir[3] = "akPu3CaloJetAnalyzer";
   dir[3] = "hiEvtAnalyzer";
+  dir[4] = "pfcandanalyzer";
   // dir[4] = "hltobject";
 
   string trees[N] = {
@@ -64,8 +65,9 @@ void Validate_Jets(int startfile = 0,
     "HltTree",
     "t",
     // "t",
-    "HiTree"
+    "HiTree",
     // , "jetObjTree"
+    "pfTree"
   };
 
   for(int t = 0;t<N;t++){
@@ -80,7 +82,7 @@ void Validate_Jets(int startfile = 0,
     jtTree[1]->Add(filename_Forest.c_str());
     jtTree[2]->Add(filename_Forest.c_str());
     jtTree[3]->Add(filename_Forest.c_str());
-    //jtTree[4]->Add(filename_Forest.c_str());
+    jtTree[4]->Add(filename_Forest.c_str());
 
     cout<<"filename: "<<filename_Forest<<endl;
     
@@ -92,8 +94,8 @@ void Validate_Jets(int startfile = 0,
     if(printDebug)cout << "Entries : " << jtTree[2]->GetEntries() << endl;
     if(printDebug)cout << "Tree loaded  " << string(dir[3]+"/"+trees[3]).data() << endl;
     if(printDebug)cout << "Entries : " << jtTree[3]->GetEntries() << endl;
-    //if(printDebug)cout << "Tree loaded  " << string(dir[4]+"/"+trees[4]).data() << endl;
-    //if(printDebug)cout << "Entries : " << jtTree[4]->GetEntries() << endl;
+    if(printDebug)cout << "Tree loaded  " << string(dir[4]+"/"+trees[4]).data() << endl;
+    if(printDebug)cout << "Entries : " << jtTree[4]->GetEntries() << endl;
 
     cout<<"Total number of events loaded in HiForest = "<<jtTree[2]->GetEntries()<<endl;
 
@@ -102,6 +104,7 @@ void Validate_Jets(int startfile = 0,
   jtTree[2]->AddFriend(jtTree[0]);
   jtTree[2]->AddFriend(jtTree[1]);
   jtTree[2]->AddFriend(jtTree[3]);
+  jtTree[2]->AddFriend(jtTree[4]);
   //jtTree[3]->AddFriend(jtTree[0]);
   //jtTree[3]->AddFriend(jtTree[1]);
   //jtTree[3]->AddFriend(jtTree[4]);
@@ -164,6 +167,34 @@ void Validate_Jets(int startfile = 0,
   int pHBHENoiseFilter_F;
   int pprimaryvertexFilter_F;
   int pVertexFilterCutGplus_F;
+
+  Int_t nPFpart_F;
+  Int_t pfId_F[NOBJECT_MAX];
+  Float_t pfPt_F[NOBJECT_MAX];
+  Float_t pfVsPtInitial_F[NOBJECT_MAX];
+  Float_t pfVsPt_F[NOBJECT_MAX];
+  Float_t pfEta_F[NOBJECT_MAX];
+  Float_t pfPhi_F[NOBJECT_MAX];
+  Float_t pfArea_F[NOBJECT_MAX];
+
+
+  if(jetType == "Calo") {
+    jtTree[4]->SetBranchAddress("n", &nPFpart_F);
+    jtTree[4]->SetBranchAddress("et", pfPt_F);
+    jtTree[4]->SetBranchAddress("eta", pfEta_F);
+    jtTree[4]->SetBranchAddress("phi", pfPhi_F);
+    jtTree[4]->SetBranchAddress("vsArea", pfArea_F);
+  }
+  if(jetType == "PF") {
+    jtTree[4]->SetBranchAddress("nPFpart", &nPFpart_F);
+    jtTree[4]->SetBranchAddress("pfId", pfId_F);
+    jtTree[4]->SetBranchAddress("pfPt", pfPt_F);
+    jtTree[4]->SetBranchAddress("pfVsPtInitial", pfVsPtInitial_F);
+    jtTree[4]->SetBranchAddress("pfVsPt", pfVsPt_F);
+    jtTree[4]->SetBranchAddress("pfEta", pfEta_F);
+    jtTree[4]->SetBranchAddress("pfPhi", pfPhi_F);
+    jtTree[4]->SetBranchAddress("pfArea", pfArea_F);
+  }
 
   //float calopt_F[1000];
   //jtTree[3]->SetBranchAddress("jtpt",&calopt_F);
@@ -328,6 +359,45 @@ void Validate_Jets(int startfile = 0,
   TH1F * hJetPhi = new TH1F("hJetPhi","",60, -5, +5);
   TH1F * hJetpT = new TH1F("hJetpT","",400, 0, 600);
   TH1F * hDeltaPhi = new TH1F("hDeltaPhi","delta phi leading and subleading jets",350, 0, +3);
+
+
+  // Adding PF candidates plots
+  // 1) 2D histograms for eta vs pT for the candidate types ( for PbPb this needs to be before and after Vs subtraction)
+  // 2) 1D histograms for candidate pT/ jet pT for candidates inside the jet radius, for each candidate type
+  // Particle::pdgId_ PFCandidate::particleId_
+  // PFCandidate::ParticleType Particle
+  // 0           0  X          unknown, or dummy 
+  // +211, -211  1  h          charged hadron 
+  // +11, -11    2  e          electron 
+  // +13, -13    3  mu         muon 
+  // 22          4  gamma      photon 
+  // 130         5  h0         neutral hadron 
+  // 130         6  h_HF       hadronic energy in an HF tower 
+  // 22          7  egamma_HF  electromagnetic energy in an HF tower
+  
+  const int PFType = 8;
+  std::string PFCandType[PFType] = {"unknown",
+				    "chargedHadron",
+				    "electron",
+				    "muon",
+				    "photon",
+				    "neutralHadron",
+				    "HadEnergyinHF",
+				    "EMEnergyinHF"};
+  TH2F * hPFCand_eta_vs_pT[PFType];
+  TH1F * hPFCand_pTscale_insideJet[PFType];
+
+  if(jetType == "PF"){
+    for(int ipf = 0; ipf<PFType; ++ipf){
+      hPFCand_eta_vs_pT[ipf] = new TH2F(Form("hPFCand_eta_vs_pT_%s",PFCandType[ipf]),Form("%s;#eta;candidate p_{T}",PFCandType[ipf]),120, -5, +5, 300, 0, 300);
+      hPFCand_pTscale_insideJet[ipf] = new TH1F(Form("hPFCand_pTscale_insideJet_%s",PFCandType[ipf]),Form("%s;candidate p_{T}/jet p_{T};counts",PFCandType[ipf]),100, 0, 1);
+    }
+  }
+  if(jetType == "Calo"){
+    hPFCand_eta_vs_pT[0] = new TH2F("hPFCand_eta_vs_pT_CaloCand","Calo Cand ;#eta;candidate p_{T}",120, -5, +5, 300, 0, 300);
+    hPFCand_pTscale_insideJet[0] = new TH1F("hPFCand_pTscale_insideJet_CaloCand","Calo Cand ;candidate p_{T}/jet p_{T};counts",100, 0, 1);
+  }
+  
   if(printDebug) cout<<"Running through all the events now"<<endl;
   Long64_t nentries = jtTree[0]->GetEntries();
   if(printDebug) nentries = 500;
@@ -341,8 +411,8 @@ void Validate_Jets(int startfile = 0,
     jtTree[0]->GetEntry(nEvt);
     jtTree[1]->GetEntry(nEvt);
     jtTree[2]->GetEntry(nEvt);
-    //jtTree[4]->GetEntry(nEvt);
     jtTree[3]->GetEntry(nEvt);
+    jtTree[4]->GetEntry(nEvt);
     
     if(run == "Data"){
       if(skipPho30 && photon30_F) continue;
@@ -351,7 +421,31 @@ void Validate_Jets(int startfile = 0,
       if(fabs(vz_F)>15) continue;
     }
     hRunN_vs_NJets->Fill(run_F, nref_F);
+
     
+    for(int npf = 0; npf<nPFpart_F; ++npf){
+
+      if(jetType == "Calo"){
+	hPFCand_eta_vs_pT[0]->Fill(pfEta_F[npt], pfPt_F[npf]);
+	for(int njet = 0; njet<nref_F; ++njet){
+	  float delR = deltaR(pfEta_F[npf], pfPhi_F[npf], eta_F[njet], phi_F[njet]);
+	  if(delR < (float)radius/10)
+	    hPFCand_eta_vs_pT[0]->Fill((float)(pfPt_F[npf]/pt_F[njet]));	
+	}
+      }
+
+      if(jetType == "PF"){
+	hPFCand_eta_vs_pT[pfId_F]->Fill(pfEta_F[npt], pfPt_F[npf]);
+	for(int njet = 0; njet<nref_F; ++njet){
+	  float delR = deltaR(pfEta_F[npf], pfPhi_F[npf], eta_F[njet], phi_F[njet]);
+	  if(delR < (float)radius/10)
+	    hPFCand_eta_vs_pT[pfId_F]->Fill((float)(pfPt_F[npf]/pt_F[njet]));	
+	}
+      }
+      
+    }// pf cands loop
+
+      
     if(jetMB_F) hMBSpectra->Fill(pt_F[0]);
     if(jetMB_F && jet40_F) hJet40andMB->Fill(pt_F[0]);
     if(jetMB_F && jet60_F) hJet60andMB->Fill(pt_F[0]);
@@ -364,7 +458,7 @@ void Validate_Jets(int startfile = 0,
 
     if(jet100_F) hJet100->Fill(pt_F[0]);
 
-    /*
+    
     
     if(nref_F >=3 && doDijetImbalance) {
 
@@ -415,51 +509,54 @@ void Validate_Jets(int startfile = 0,
       
       Float_t alpha = 2*j_array_pt[2]/(j_array_pt[0] + j_array_pt[1]);
       if(printDebug) cout<<"alpha = "<<alpha<<endl;
-      if (alpha > 0.2) continue;
-      if(referencept == probept && probept != 0)  cout<< "There is a problem!    "<<probept<<endl;
-      if (referencept == 0 || probept == 0) continue;     
-      Float_t averagept = (float)(probept + referencept)/2;
-      float delPhi = deltaphi(probephi, referencephi);
-      if (delPhi < 2.5) continue;
-      dijetbalanceparameter = 2*(probept - referencept)/(probept + referencept);
-
-      if(printDebug) cout<<"dijet imbalance parameter = "<<dijetbalanceparameter<<endl;
-      
-      int avgpTbin = -1;
-      for(int npt = 0; npt<nbins_pt; ++npt){
-	if(averagept > ptbins[npt]) avgpTbin = npt;
-      }
-      if(avgpTbin !=-1){
-
-	hRelResponse[avgpTbin]->Fill(dijetbalanceparameter);
-    
-	//FILL OUTERETA HISTOGRAMS
-	if (probeeta < -1.3 || probeeta > 1.3){
-	  hRelResponse_outereta[avgpTbin]->Fill(dijetbalanceparameter);
-	}
-
-	if (refeta > -1.3 && refeta < 1.3 && probeeta > -1.3 && probeeta < 1.3) {
-	  Int_t v1 = rand();
-	  Int_t v2 = v1%2;
-	  if (v2 == 1) {
+      if (alpha < 0.2){
+	if(referencept == probept && probept != 0)  cout<< "There is a problem!    "<<probept<<endl;
+	if (referencept != 0 && probept != 0) {     
+	  Float_t averagept = (float)(probept + referencept)/2;
+	  float delPhi = deltaphi(probephi, referencephi);
+	  if (delPhi > (float)(2*pi/3)) {
 	    dijetbalanceparameter = 2*(probept - referencept)/(probept + referencept);
-	  }
-	  else  {
-	    dijetbalanceparameter = 2*(referencept - probept)/(probept + referencept);
-	  }
-	  //FILL INNERETA HISTOGRAMS
-	  hRelResponse_innereta[avgpTbin]->Fill(dijetbalanceparameter);
-	}//refeta, probeeta if statement
+	    
+	    if(printDebug) cout<<"dijet imbalance parameter = "<<dijetbalanceparameter<<endl;
       
-      }// avg pT bin
+	    int avgpTbin = -1;
+	    for(int npt = 0; npt<nbins_pt; ++npt){
+	      if(averagept > ptbins[npt]) avgpTbin = npt;
+	    }
+	    if(avgpTbin !=-1){
+	      
+	      hRelResponse[avgpTbin]->Fill(dijetbalanceparameter);
+	      
+	      //FILL OUTERETA HISTOGRAMS
+	      if (probeeta < -1.3 || probeeta > 1.3){
+		hRelResponse_outereta[avgpTbin]->Fill(dijetbalanceparameter);
+	      }
+	      
+	      if (refeta > -1.3 && refeta < 1.3 && probeeta > -1.3 && probeeta < 1.3) {
+		Int_t v1 = rand();
+		Int_t v2 = v1%2;
+		if (v2 == 1) {
+		  dijetbalanceparameter = 2*(probept - referencept)/(probept + referencept);
+		}
+		else  {
+		  dijetbalanceparameter = 2*(referencept - probept)/(probept + referencept);
+		}
+		//FILL INNERETA HISTOGRAMS
+		hRelResponse_innereta[avgpTbin]->Fill(dijetbalanceparameter);
+	      }//refeta, probeeta if statement
+	      
+	    }// avg pT bin
 
+	  }// delta phi selection
+
+	}// refpt!=-, probpt!=0
+
+      }// alpha selection, suppression of third jet
       j_array_pt.clear();
       j_array_phi.clear();
       j_array_eta.clear();
       
     }
-
-    */ 
     
     for(int ijet=0; ijet<nref_F; ijet++){
       hJet40All->Fill(pt_F[ijet]);

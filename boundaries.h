@@ -34,6 +34,7 @@
 #include "TMath.h"
 #include "TLine.h"
 
+#define NOBJECT_MAX 16384
 
 // boundaries of the pt bins, cent bins and eta bins for the runForest and plot macros.
 
