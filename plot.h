@@ -40,24 +40,6 @@ TLegend *getLegend(double x1, double y1, double x2, double y2)
   return leg;
 }
 
-
-// divide by bin width
-void divideBinWidth(TH1 *h)
-{
-  h->Sumw2();
-  for (int i=0;i<=h->GetNbinsX();i++)
-    {
-      Float_t val = h->GetBinContent(i);
-      Float_t valErr = h->GetBinError(i);
-      val/=h->GetBinWidth(i);
-      valErr/=h->GetBinWidth(i);
-      h->SetBinContent(i,val);
-      h->SetBinError(i,valErr);
-    }
-  h->GetXaxis()->CenterTitle();
-  h->GetYaxis()->CenterTitle();
-}
-
 void formatCanvas(TCanvas *c){
   c->Divide(1,2,0.01,0.01);
   c->cd(1);
@@ -92,7 +74,7 @@ void drawText(const char *text, float xp, float yp, int size){
   tex->Draw();
 }
 
-void putCMSPrel(double x=0.2, double y=0.95, double size=0.05){
+void putCMSPrel(double x=0.15, double y=0.90, double size=0.03){
   TLatex *tex=0;
   tex = new TLatex(x,y,"CMS Preliminary");
   tex->SetTextSize(size);

@@ -8,11 +8,11 @@
 using namespace std;
 
 void Validate_Jets(int startfile = 0,
-		   int endfile = 16,
+		   int endfile = 1,
 		   int radius = 4,
 		   std::string coll= "PP",
 		   std::string run= "Data",
-		   std::string jetType= "Calo",
+		   std::string jetType= "PF",
 		   std::string algo= "",
 		   std::string kFoname="PromptForest")
 {
@@ -29,16 +29,16 @@ void Validate_Jets(int startfile = 0,
   if(coll=="PP") algo = "";
 
   bool doBjets = false;
-  bool skipPho50 = true;
-  bool printDebug = true;
-  bool doDijetImbalance = true;
+  bool skipPho30 = true;
+  bool printDebug = false;
+  bool doDijetImbalance = false;
   if(printDebug)cout<<"radius = "<<radius<<endl;
   
   TDatime date;
 
   std::string infile_Forest;
 
-  infile_Forest = Form("%s_%s_forests.txt", coll.c_str(), run.c_str());
+  infile_Forest = Form("%s_%s_ExpressForest.txt", coll.c_str(), run.c_str());
   std::ifstream instr_Forest(infile_Forest.c_str(),std::ifstream::in);
   std::string filename_Forest;
   
@@ -150,7 +150,7 @@ void Validate_Jets(int startfile = 0,
   int jet80_p_F;
   int jet100_p_F;
   int jetMB_p_F;
-  int photon50_F;
+  int photon30_F;
   float vz_F;
   int evt_F;
   int run_F;
@@ -184,7 +184,7 @@ void Validate_Jets(int startfile = 0,
   jtTree[3]->SetBranchAddress("hiNtracksEtaPtCut",&hiNtracksEtaPtCut_F);
   jtTree[3]->SetBranchAddress("vz",&vz_F);
   jtTree[1]->SetBranchAddress("PAcollisionEventSelection",&pcollisionEventSelection_F);
-  // jtTree[0]->SetBranchAddress("pHBHENoiseFilter",&pHBHENoiseFilter_F);
+  jtTree[1]->SetBranchAddress("pHBHENoiseFilterResultProducer",&pHBHENoiseFilter_F);
   // jtTree[0]->SetBranchAddress("pprimaryvertexFilter",&pprimaryvertexFilter_F);
   // jtTree[0]->SetBranchAddress("pVertexFilterCutGplus",&pVertexFilterCutGplus_F);
   if(run == "MC") jtTree[2]->SetBranchAddress("pthat",&pthat_F);
@@ -225,7 +225,7 @@ void Validate_Jets(int startfile = 0,
   //jtTree[0]->SetBranchAddress("",&jet80_p_F);
   jtTree[0]->SetBranchAddress(Form("HLT_AK4%sJet100_Eta5p1_v1", jetType.c_str()),&jet100_F);
   //jtTree[0]->SetBranchAddress("",&jet100_p_F);
-  jtTree[0]->SetBranchAddress("HLT_HISinglePhoton50_Eta1p5_v1",&photon50_F);
+  jtTree[0]->SetBranchAddress("HLT_HISinglePhoton30_Eta1p5_v1",&photon30_F);
   // jtTree[0]->SetBranchAddress("L1_SingleJet36_BptxAND",&L1_sj36_F);
   // jtTree[0]->SetBranchAddress("L1_SingleJet36_BptxAND_Prescl",&L1_sj36_p_F);
   // jtTree[0]->SetBranchAddress("L1_SingleJet52_BptxAND",&L1_sj52_F);
@@ -349,9 +349,9 @@ void Validate_Jets(int startfile = 0,
     //jtTree[4]->GetEntry(nEvt);
     jtTree[3]->GetEntry(nEvt);
     
-    if(skipPho50 && photon50_F) continue;
+    if(skipPho30 && photon30_F) continue;
     if(pcollisionEventSelection_F==0) continue;
-    // if(pHBHENoiseFilter_F == 0) continue;
+    if(pHBHENoiseFilter_F == 0) continue;
     if(fabs(vz_F)>15) continue;
 
     hRunN_vs_NJets->Fill(run_F, nref_F);
@@ -367,6 +367,8 @@ void Validate_Jets(int startfile = 0,
     if(jet80_F) hJet80->Fill(pt_F[0]);
     if(jet100_F) hJet100->Fill(pt_F[0]);    
 
+    /*
+    
     if(nref_F >=3 && doDijetImbalance) {
 
       j_array_pt.clear();
@@ -459,6 +461,8 @@ void Validate_Jets(int startfile = 0,
       j_array_eta.clear();
       
     }
+
+    */ 
     
     for(int ijet=0; ijet<nref_F; ijet++){
       hJet40All->Fill(pt_F[ijet]);
@@ -472,11 +476,13 @@ void Validate_Jets(int startfile = 0,
 	discrCSV->Fill(discr_csv_F[ijet]);
       }
 
-      if(jet80_F && pt_F[0] >90.0 && pt_F[1] >20.0) { 
+      if(jet80_F && pt_F[0] >100.0 && pt_F[1] >40.0) { 
 	hJetEta->Fill(eta_F[ijet]);
 	hJetPhi->Fill(phi_F[ijet]);
-	hJetpT->Fill(pt_F[ijet]);
+	hDeltaPhi->Fill(deltaphi(phi_F[0], phi_F[1]));
       }
+
+      if(jet80_F) hJetpT->Fill(pt_F[ijet]);
       
       if(fabs(eta_F[ijet]) < 0.5){
 	hJEC_eta0_05->Fill((float)pt_F[ijet]/rawpt_F[ijet]);
