@@ -345,7 +345,7 @@ void Validate_Jets(int startfile = 0,
     jtTree[3]->GetEntry(nEvt);
     
     if(run == "Data"){
-      if(skipPho50 && photon50_F) continue;
+      if(skipPho30 && photon30_F) continue;
       if(pcollisionEventSelection_F==0) continue;
       //if(pHBHENoiseFilter_F == 0) continue;
       if(fabs(vz_F)>15) continue;
