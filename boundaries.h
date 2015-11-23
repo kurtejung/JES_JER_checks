@@ -5,6 +5,7 @@
 #include <TH1F.h>
 #include <TH1F.h>
 #include <TH2F.h>
+#include <TH3F.h>
 #include <TFile.h>
 #include <TTree.h>
 #include <TF1.h>
@@ -57,14 +58,42 @@ const int nbins_eta = sizeof(etabins)/sizeof(double) -1;
 
 const int ncen=4;
 const int centbins[ncen+1] = {0, 20, 60, 100, 200};
-const char *cdir[ncen]  = {"010","1030","3050","50100"};
-const char *ccent[ncen] = {"0-10%","10-30%","30-50%","50-100%"};
+const char *cdir[ncen+1]  = {"010","1030","3050","50100", "PP"};
+const char *ccent[ncen+1] = {"0-10%","10-30%","30-50%","50-100%", "PP"};
 
 const int knj = 1;
 std::string srad[knj]={"4"};
 
 double xmin=ptbins[0];
 double xmax=ptbins[nbins_pt];
+
+
+
+
+// Adding PF candidates plots
+// 1) 2D histograms for eta vs pT for the candidate types ( for PbPb this needs to be before and after Vs subtraction)
+// 2) 1D histograms for candidate pT/ jet pT for candidates inside the jet radius, for each candidate type
+// Particle::pdgId_ PFCandidate::particleId_
+// PFCandidate::ParticleType Particle
+// 0           0  X          unknown, or dummy 
+// +211, -211  1  h          charged hadron 
+// +11, -11    2  e          electron 
+// +13, -13    3  mu         muon 
+// 22          4  gamma      photon 
+// 130         5  h0         neutral hadron 
+// 130         6  h_HF       hadronic energy in an HF tower 
+// 22          7  egamma_HF  electromagnetic energy in an HF tower
+  
+const int PFType = 8;
+std::string PFCandType[PFType] = {"unknown",
+				  "chargedHadron",
+				  "electron",
+				  "muon",
+				  "photon",
+				  "neutralHadron",
+				  "HadEnergyinHF",
+				  "EMEnergyinHF"};
+
 
 /*
 int findBin(int bin)
@@ -154,3 +183,7 @@ bool compare_pt(Jet jet1, Jet jet2);
 bool compare_pt(Jet jet1, Jet jet2){
   return jet1.pt > jet2.pt;
 }
+
+
+float LjCut = 100.0;
+float SbjCut = 40.0;
