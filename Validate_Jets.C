@@ -10,10 +10,10 @@ using namespace std;
 void Validate_Jets(int startfile = 0,
 		   int endfile = 1,
 		   int radius = 4,
-		   std::string coll= "PP",
+		   std::string coll= "PbPb",
 		   std::string run= "Data",
-		   std::string jetType= "PF",
-		   std::string algo= "",
+		   std::string jetType= "Calo",
+		   std::string algo= "Vs",
 		   std::string kFoname="PromptForest")
 {
 
@@ -231,7 +231,8 @@ void Validate_Jets(int startfile = 0,
   jtTree[3]->SetBranchAddress("hiNtracksEtaCut",&hiNtracksEtaCut_F);
   jtTree[3]->SetBranchAddress("hiNtracksEtaPtCut",&hiNtracksEtaPtCut_F);
   jtTree[3]->SetBranchAddress("vz",&vz_F);
-  jtTree[1]->SetBranchAddress("PAcollisionEventSelection",&pcollisionEventSelection_F);
+  if(coll == "PP")jtTree[1]->SetBranchAddress("PAcollisionEventSelection",&pcollisionEventSelection_F);
+  if(coll == "PbPb")jtTree[1]->SetBranchAddress("pcollisionEventSelection",&pcollisionEventSelection_F);
   jtTree[1]->SetBranchAddress("pHBHENoiseFilterResultProducer",&pHBHENoiseFilter_F);
   // jtTree[0]->SetBranchAddress("pprimaryvertexFilter",&pprimaryvertexFilter_F);
   // jtTree[0]->SetBranchAddress("pVertexFilterCutGplus",&pVertexFilterCutGplus_F);
@@ -263,21 +264,44 @@ void Validate_Jets(int startfile = 0,
   jtTree[2]->SetBranchAddress("eMax",eMax_F);
   jtTree[2]->SetBranchAddress("muSum",muSum_F);
   jtTree[2]->SetBranchAddress("muMax",muMax_F);
-  jtTree[0]->SetBranchAddress("HLT_L1MinimumBiasHF1OR_part1_v1",&jetMB_F);
-  //jtTree[0]->SetBranchAddress("",&jetMB_p_F);  
-  jtTree[0]->SetBranchAddress(Form("HLT_AK4%sJet40_Eta5p1_v1", jetType.c_str()),&jet40_F);
-  //jtTree[0]->SetBranchAddress("",&jet40_p_F);
-  jtTree[0]->SetBranchAddress(Form("HLT_AK4%sJet60_Eta5p1_v1", jetType.c_str()),&jet60_F);
-  //jtTree[0]->SetBranchAddress("",&jet60_p_F);
-  jtTree[0]->SetBranchAddress(Form("HLT_AK4%sJet80_Eta5p1_v1", jetType.c_str()),&jet80_F);
-  //jtTree[0]->SetBranchAddress("",&jet80_p_F);
-  jtTree[0]->SetBranchAddress(Form("HLT_AK4%sJet100_Eta5p1_v1", jetType.c_str()),&jet100_F);
-  //jtTree[0]->SetBranchAddress("",&jet100_p_F);
+
+  if(coll == "PP"){
+    jtTree[0]->SetBranchAddress("HLT_L1MinimumBiasHF1OR_part1_v1",&jetMB_F);
+    //jtTree[0]->SetBranchAddress("HLT_L1MinimumBiasHF1OR_part1_v1_Prescl",&jetMB_p_F);  
+    jtTree[0]->SetBranchAddress(Form("HLT_AK4%sJet40_Eta5p1_v1", jetType.c_str()),&jet40_F);
+    //jtTree[0]->SetBranchAddress(Form("HLT_AK4%sJet40_Eta5p1_v1_Prescl"jetType.c_str()),&jet40_p_F);
+    jtTree[0]->SetBranchAddress(Form("HLT_AK4%sJet60_Eta5p1_v1", jetType.c_str()),&jet60_F);
+    //jtTree[0]->SetBranchAddress(Form("HLT_AK4%sJet60_Eta5p1_v1_Prescl"jetType.c_str()),&jet60_p_F);
+    jtTree[0]->SetBranchAddress(Form("HLT_AK4%sJet80_Eta5p1_v1", jetType.c_str()),&jet80_F);
+    //jtTree[0]->SetBranchAddress(Form("HLT_AK4%sJet80_Eta5p1_v1_Prescl"jetType.c_str()),&jet80_p_F);
+    jtTree[0]->SetBranchAddress(Form("HLT_AK4%sJet100_Eta5p1_v1", jetType.c_str()),&jet100_F);
+    //jtTree[0]->SetBranchAddress(Form("HLT_AK4%sJet100_Eta5p1_v1_Prescl"jetType.c_str()),&jet100_p_F);
+    jtTree[0]->SetBranchAddress("HLT_HISinglePhoton30_Eta1p5_v1",&photon30_F);
+    jtTree[0]->SetBranchAddress("HLT_AK4PFBJetBSSV60_Eta2p1_v1",&ssvTrg60_F);
+    jtTree[0]->SetBranchAddress("HLT_AK4PFBJetBSSV80_Eta2p1_v1",&ssvTrg80_F);
+    jtTree[0]->SetBranchAddress("HLT_AK4PFBJetBCSV60_Eta2p1_v1",&csvTrg60_F);
+    jtTree[0]->SetBranchAddress("HLT_AK4PFBJetBCSV80_Eta2p1_v1",&csvTrg80_F);
+  }
+  if(coll == "PbPb"){
+    jtTree[0]->SetBranchAddress("",&jetMB_F);
+    //jtTree[0]->SetBranchAddress("HLT_L1MinimumBiasHF1OR_part1_v1_Prescl",&jetMB_p_F);  
+    jtTree[0]->SetBranchAddress(Form("HLT_HIPuAK4%sJet40_Eta5p1_v1", jetType.c_str()),&jet40_F);
+    //jtTree[0]->SetBranchAddress(Form("HLT_HIPuAK4%sJet40_Eta5p1_v1_Prescl"jetType.c_str()),&jet40_p_F);
+    jtTree[0]->SetBranchAddress(Form("HLT_HIPuAK4%sJet60_Eta5p1_v1", jetType.c_str()),&jet60_F);
+    //jtTree[0]->SetBranchAddress(Form("HLT_HIPuAK4%sJet60_Eta5p1_v1_Prescl"jetType.c_str()),&jet60_p_F);
+    jtTree[0]->SetBranchAddress(Form("HLT_HIPuAK4%sJet80_Eta5p1_v1", jetType.c_str()),&jet80_F);
+    //jtTree[0]->SetBranchAddress(Form("HLT_HIPuAK4%sJet80_Eta5p1_v1_Prescl"jetType.c_str()),&jet80_p_F);
+    jtTree[0]->SetBranchAddress(Form("HLT_HIPuAK4%sJet100_Eta5p1_v1", jetType.c_str()),&jet100_F);
+    //jtTree[0]->SetBranchAddress(Form("HLT_HIPuAK4%sJet100_Eta5p1_v1_Prescl"jetType.c_str()),&jet100_p_F);
+    jtTree[0]->SetBranchAddress("HLT_HISinglePhoton30_Eta1p5_v1",&photon30_F);
+    jtTree[0]->SetBranchAddress("HLT_HIPuAK4PFBJetBSSV60_Eta2p1_v1",&ssvTrg60_F);
+    jtTree[0]->SetBranchAddress("HLT_HIPuAK4PFBJetBSSV80_Eta2p1_v1",&ssvTrg80_F);
+    jtTree[0]->SetBranchAddress("HLT_HIPuAK4PFBJetBCSV60_Eta2p1_v1",&csvTrg60_F);
+    jtTree[0]->SetBranchAddress("HLT_HIPuAK4PFBJetBCSV80_Eta2p1_v1",&csvTrg80_F);
+    
+  }
+
   jtTree[0]->SetBranchAddress("HLT_HISinglePhoton30_Eta1p5_v1",&photon30_F);
-  jtTree[0]->SetBranchAddress("HLT_AK4PFBJetBSSV60_Eta2p1_v1",&ssvTrg60_F);
-  jtTree[0]->SetBranchAddress("HLT_AK4PFBJetBSSV80_Eta2p1_v1",&ssvTrg80_F);
-  jtTree[0]->SetBranchAddress("HLT_AK4PFBJetBCSV60_Eta2p1_v1",&csvTrg60_F);
-  jtTree[0]->SetBranchAddress("HLT_AK4PFBJetBCSV80_Eta2p1_v1",&csvTrg80_F);
   // jtTree[0]->SetBranchAddress("L1_SingleJet36_BptxAND",&L1_sj36_F);
   // jtTree[0]->SetBranchAddress("L1_SingleJet36_BptxAND_Prescl",&L1_sj36_p_F);
   // jtTree[0]->SetBranchAddress("L1_SingleJet52_BptxAND",&L1_sj52_F);
