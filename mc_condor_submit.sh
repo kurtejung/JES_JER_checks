@@ -13,19 +13,18 @@ tardir=`pwd`
 radius=4
 coll="PP"
 run="MC"
-algo="Pu"
-jetType="PF"
+algo=""
+jetType="Calo"
 
-outputfile="PromptForest${coll}_${run}_ak${radius}${jetType}.root"
 
 echo "nFiles in list: $nFiles"
 while [ $counter -lt $1 ]
 do
     echo $counter >> Submitted
     
-    Error="ak$algo$radius$jetType-PbPbMC-$endfile.err"
-    Output="ak$algo$radius$jetType-PbPbMC-$endfile.out"
-    Log="ak$algo$radius$jetType-PbPbMC-$endfile.log"
+    Error="ak$algo$radius$jetType-$coll$run-$endfile.err"
+    Output="ak$algo$radius$jetType-$coll$run-$endfile.out"
+    Log="ak$algo$radius$jetType-$coll$run-$endfile.log"
     
     startfile=$(( $counter * $2 ))
     endfile=$(( ($counter + 1) * $2 ))
@@ -34,8 +33,7 @@ do
         let counter=$1
     fi
 
-    outfile="PromptForest"
-    
+    outfile="PromptForest"    
     # Condor submit file
     cat > subfile <<EOF
 
@@ -44,12 +42,12 @@ Environment = "HOSTNAME=$HOSTNAME"
 # files will be copied back to this dir
 # Initialdir     = .
 #tell condor where my grid certificate it
-#x509userproxy=/tmp/x509up_u2142
+x509userproxy=/tmp/x509up_u2142
 # run my script
 Executable     = mc_condor_run.sh
 +AccountingGroup = "group_cmshi.rkunnawa"
 #+IsMadgraph = 1
-Arguments      = $startfile $endfile $radius $coll $run $jetType $algo $outfile
+Arguments      = $startfile $endfile $radius $coll $run $jetType $outfile  
 # input files. in this case, there are none.
 Input          = /dev/null
 # log files

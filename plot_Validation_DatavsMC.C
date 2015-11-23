@@ -35,7 +35,7 @@ using namespace std;
 
 const int digi=3;
 
-void plot_Validation_DatavsMC(int radius = 4,
+void plot_Validatin_DatavsMC(int radius = 4,
 			     std::string coll = "PP",
 			     std::string algo = "",
 			     std::string jetType = "PF",
