@@ -26,6 +26,8 @@ void Validate_Jets(int startfile = 0,
   gStyle->SetOptStat(0);
 
   bool doBjets = false;
+  std::string bJetString = "";
+  if(doBjets) bJetString = "_withBjets";
   bool skipPho30 = true;
   bool printDebug = true;
   bool doDijetImbalance = false;
@@ -182,6 +184,10 @@ void Validate_Jets(int startfile = 0,
   int pprimaryvertexFilter_F;
   int pVertexFilterCutGplus_F;
   float crossSection_F;
+  int ssvTrg60_F;
+  int ssvTrg80_F;
+  int csvTrg60_F;
+  int csvTrg80_F;
 
   Int_t nPFpart_F;
   Int_t pfId_F[NOBJECT_MAX];
@@ -268,6 +274,10 @@ void Validate_Jets(int startfile = 0,
   jtTree[0]->SetBranchAddress(Form("HLT_AK4%sJet100_Eta5p1_v1", jetType.c_str()),&jet100_F);
   //jtTree[0]->SetBranchAddress("",&jet100_p_F);
   jtTree[0]->SetBranchAddress("HLT_HISinglePhoton30_Eta1p5_v1",&photon30_F);
+  jtTree[0]->SetBranchAddress("HLT_AK4PFBJetBSSV60_Eta2p1_v1",&ssvTrg60_F);
+  jtTree[0]->SetBranchAddress("HLT_AK4PFBJetBSSV80_Eta2p1_v1",&ssvTrg80_F);
+  jtTree[0]->SetBranchAddress("HLT_AK4PFBJetBCSV60_Eta2p1_v1",&csvTrg60_F);
+  jtTree[0]->SetBranchAddress("HLT_AK4PFBJetBCSV80_Eta2p1_v1",&csvTrg80_F);
   // jtTree[0]->SetBranchAddress("L1_SingleJet36_BptxAND",&L1_sj36_F);
   // jtTree[0]->SetBranchAddress("L1_SingleJet36_BptxAND_Prescl",&L1_sj36_p_F);
   // jtTree[0]->SetBranchAddress("L1_SingleJet52_BptxAND",&L1_sj52_F);
@@ -276,7 +286,7 @@ void Validate_Jets(int startfile = 0,
   std::string rad = Form("%d",radius);
   std::string end = Form("%d",endfile);
   
-  TFile *fout = new TFile((kFoname+coll+"_"+run+"_ak"+algo+rad+jetType+"_"+end+".root").c_str(),"RECREATE");
+  TFile *fout = new TFile((kFoname+coll+"_"+run+"_ak"+algo+rad+jetType+bJetString+"_"+end+".root").c_str(),"RECREATE");
   fout->cd();
 
   // Add the histograms necessary for the validation,
@@ -368,6 +378,19 @@ void Validate_Jets(int startfile = 0,
   TH1F *discrSSVHP = new TH1F("discrSSVHP","",30,0,6);
   TH1F *discrCSV = new TH1F("discrCSV","",30,0,1);
   
+  TH1F *csvTrg80 = new TH1F("csvTrg80","",60,0,300);
+  TH1F *ssvTrg80 = new TH1F("ssvTrg80","",60,0,300);
+  TH1F *csvTrg60 = new TH1F("csvTrg60","",60,0,300);
+  TH1F *ssvTrg60 = new TH1F("ssvTrg60","",60,0,300);
+
+  TH1F *csvTrg80withCSV = new TH1F("csvTrg80withCSV","",60,0,300);
+  TH1F *csvTrg60withCSV = new TH1F("csvTrg60withCSV","",60,0,300);
+  TH1F *ssvTrg80withSSVHP = new TH1F("ssvTrg80withSSVHP","",60,0,300);
+  TH1F *ssvTrg60withSSVHP = new TH1F("ssvTrg60withSSVHP","",60,0,300);
+
+  TH1F *csvDistr = new TH1F("csvDistr","",60,0,300);
+  TH1F *ssvDistr = new TH1F("ssvDistr","",60,0,300);
+
   TH1F * pt2overpt1 = new TH1F("pt2overpt1","pt2/pt1",100, 0, 2);
   TH1F * hJetEta = new TH1F("hJetEta","",60, -5, +5);
   TH1F * hJetPhi = new TH1F("hJetPhi","",60, -5, +5);
@@ -583,6 +606,27 @@ void Validate_Jets(int startfile = 0,
 	discrSSVHE->Fill(discr_ssvHighEff_F[ijet]);
 	discrSSVHP->Fill(discr_ssvHighPur_F[ijet]);
 	discrCSV->Fill(discr_csv_F[ijet]);
+
+	if(csvTrg60_F){
+		csvTrg60->Fill(pt_F[ijet]);
+		if(discr_csv_F[ijet]>0.9) csvTrg60withCSV->Fill(pt_F[ijet]);
+	}
+	if(csvTrg80_F){
+		csvTrg80->Fill(pt_F[ijet]);
+		if(discr_csv_F[ijet]>0.9) csvTrg80withCSV->Fill(pt_F[ijet]);
+	}
+	if(ssvTrg60_F){
+		ssvTrg60->Fill(pt_F[ijet]);
+		if(discr_ssvHighPur_F[ijet]>1.2) ssvTrg60withSSVHP->Fill(pt_F[ijet]);
+	}
+	if(ssvTrg80_F){
+		ssvTrg80->Fill(pt_F[ijet]);
+		if(discr_ssvHighPur_F[ijet]>1.2) ssvTrg80withSSVHP->Fill(pt_F[ijet]);
+	}
+
+	if(discr_csv_F[ijet]>0.9) csvDistr->Fill(pt_F[ijet]);
+	if(discr_ssvHighPur_F[ijet]>1.2) ssvDistr->Fill(pt_F[ijet]);
+
       }
 
       if(nref_F >= 2) hDeltaPhi->Fill(deltaphi(phi_F[0], phi_F[1]));
