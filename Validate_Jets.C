@@ -8,7 +8,7 @@
 using namespace std;
 
 void Validate_Jets(int startfile = 0,
-		   int endfile = 16,
+		   int endfile = 1,
 		   int radius = 4,
 		   std::string coll= "PP",
 		   std::string run= "Data",
@@ -282,8 +282,7 @@ void Validate_Jets(int startfile = 0,
   TH2F * hJEC_vs_rawpT_eta10_15 = new TH2F("hJEC_vs_rawpT_eta10_15","JEC applied in the forest vs raw pT, 1.0<|#eta|<1.5",200, 0, 200, 300, 0.5, 2);
 
   TH1F * hJEC_eta15_20 = new TH1F("hJEC_eta15_20","JEC applied in the forest, 1.5<|#eta|<2.0, ",100, 0, 5);
-  TH2F * hJEC_vs_rawpT_eta15_20 = new TH2F("hJEC_vs_rawpT_eta15_20","JEC applied in the forest vs raw pT, 1.5<|#eta|<2.0",200, 0, 200, 300, 0.5, 2);
-
+  TH2F * hJEC_vs_rawpT_eta15_20 = new TH2F("hJEC_vs_rawpT_eta15_20","JEC applied in the forest vs raw pT, 1.5<|#eta|<2.0",200, 0, 200, 100, 0.5, 2);
 
   TH1F * hJEC_eta20_25 = new TH1F("hJEC_eta20_25","JEC applied in the forest, 2.0<|#eta|<2.5, ",100, 0, 5);
   TH2F * hJEC_vs_rawpT_eta20_25 = new TH2F("hJEC_vs_rawpT_eta20_25","JEC applied in the forest vs raw pT, 2.0<|#eta|<2.5",200, 0, 200, 100, 0.5, 2);
@@ -296,8 +295,6 @@ void Validate_Jets(int startfile = 0,
 
   TH1F * hJEC_eta35_40 = new TH1F("hJEC_eta35_40","JEC applied in the forest, 3.5<|#eta|<4.0, ",100, 0, 5);
   TH2F * hJEC_vs_rawpT_eta35_40 = new TH2F("hJEC_vs_rawpT_eta35_40","JEC applied in the forest vs raw pT, 3.5<|#eta|<4.0",200, 0, 200, 100, 0.5, 2);
-
-
   
   Float_t dphi = 0;
   Float_t eta_cut_min = -3;
@@ -327,15 +324,13 @@ void Validate_Jets(int startfile = 0,
   TH1F *discrCSV = new TH1F("discrCSV","",30,0,1);
   
   TH1F * pt2overpt1 = new TH1F("pt2overpt1","pt2/pt1",100, 0, 2);
-
   TH1F * hJetEta = new TH1F("hJetEta","",60, -5, +5);
   TH1F * hJetPhi = new TH1F("hJetPhi","",60, -5, +5);
   TH1F * hJetpT = new TH1F("hJetpT","",400, 0, 600);
   TH1F * hDeltaPhi = new TH1F("hDeltaPhi","delta phi leading and subleading jets",350, 0, +3);
-
   if(printDebug) cout<<"Running through all the events now"<<endl;
   Long64_t nentries = jtTree[0]->GetEntries();
-  if(printDebug) nentries = 10;
+  if(printDebug) nentries = 500;
   TRandom rnd;
 
   for(int nEvt = 0; nEvt < nentries; ++ nEvt) {
@@ -366,10 +361,11 @@ void Validate_Jets(int startfile = 0,
     if(jet40_F) hJet40->Fill(pt_F[0]);
     if(jet60_F) hJet60->Fill(pt_F[0]);
     if(jet80_F) hJet80->Fill(pt_F[0]);
+
     if(jet100_F) hJet100->Fill(pt_F[0]);
 
     if(nref_F >=3 && doDijetImbalance) {
-      
+
       j_array_pt.clear();
       j_array_phi.clear();
       j_array_eta.clear();
@@ -408,7 +404,7 @@ void Validate_Jets(int startfile = 0,
 	    probeeta = j_array_eta[1];
 	  }
 	}
-      }
+      }// pt array 
 
       if(printDebug) cout<<"Probe pT       = "<<probept<<endl;
       if(printDebug) cout<<"reference pT   = "<<referencept<<endl;
@@ -459,8 +455,7 @@ void Validate_Jets(int startfile = 0,
       j_array_phi.clear();
       j_array_eta.clear();
 
-    }
-
+    }//dijet imbalance
     
     for(int ijet=0; ijet<nref_F; ijet++){
       hJet40All->Fill(pt_F[ijet]);
@@ -476,7 +471,7 @@ void Validate_Jets(int startfile = 0,
 
       if(nref_F >= 2) hDeltaPhi->Fill(deltaphi(phi_F[0], phi_F[1]));
       
-      if(pt_F[0]>90.0){
+      if(jet80_F && pt_F[0] >90.0 && pt_F[1] >20.0) { 
 	hJetEta->Fill(eta_F[ijet]);
 	hJetPhi->Fill(phi_F[ijet]);
 	hJetpT->Fill(pt_F[ijet]);
@@ -514,7 +509,7 @@ void Validate_Jets(int startfile = 0,
 	hJEC_eta35_40->Fill((float)pt_F[ijet]/rawpt_F[ijet]);
 	hJEC_vs_rawpT_eta35_40->Fill(rawpt_F[ijet],(float)pt_F[ijet]/rawpt_F[ijet]);
       }
-    }
+    }// njets
 
     if(run == "MC"){
       if(pt_F[0]>90.0 && pt_F[1] >20.0){
@@ -522,7 +517,7 @@ void Validate_Jets(int startfile = 0,
 	pt2overpt1->Fill((float)pt_F[1]/pt_F[0]);
 	hAj->Fill(Aj);
       }
-    }
+    }//mc
 
     if(run == "Data"){
       if(jet80_F && pt_F[0]>90.0 && pt_F[1] >20.0){
@@ -530,24 +525,23 @@ void Validate_Jets(int startfile = 0,
 	pt2overpt1->Fill((float)pt_F[1]/pt_F[0]);
 	hAj->Fill(Aj);
       }
-    }
+      // int binpt = -1, bineta = -1;
+      // for(int npt = 0; npt<nbins_pt; ++npt){
+      //   if((pt_F[0]+pt_F[1]) > ptbins[npt]) binpt = npt;
+      // }
+      // if(binpt == -1) continue;
+      // for(int neta = 0; neta<nbins_eta; ++neta){
+      //   if(eta_F[0] > etabins[neta]) bineta = neta;      
+      // }
+      // if(bineta == -1) continue;
 
-    // int binpt = -1, bineta = -1;
-    // for(int npt = 0; npt<nbins_pt; ++npt){
-    //   if((pt_F[0]+pt_F[1]) > ptbins[npt]) binpt = npt;
-    // }
-    // if(binpt == -1) continue;
-    // for(int neta = 0; neta<nbins_eta; ++neta){
-    //   if(eta_F[0] > etabins[neta]) bineta = neta;      
-    // }
-    // if(bineta == -1) continue;
+      // if((float)(pt_F[2]/ptAvg) < 0.2 && deltaphi(phi_F[0], phi_F[1]) > (float)2*pi/3)
+      //   hRelResponse[binpt][bineta]->Fill(DijetRel);
+      // hAj[binpt][bineta]->Fill(Aj);
 
-    // if((float)(pt_F[2]/ptAvg) < 0.2 && deltaphi(phi_F[0], phi_F[1]) > (float)2*pi/3)
-    //   hRelResponse[binpt][bineta]->Fill(DijetRel);
-    // hAj[binpt][bineta]->Fill(Aj);
+    } //data
 
-  }
-
+  }// nevents
   // TH1F * hJet40Turnon = (TH1F*)hJet40andMB->Clone("hJet40Turnon");
   // hJet40Turnon->Divide(hMBSpectra);
   // TH1F * hJet60Turnon = (TH1F*)hJet60andMB->Clone("hJet60Turnon");
@@ -562,7 +556,6 @@ void Validate_Jets(int startfile = 0,
   timer.Stop();
   cout<<"Macro finished: "<<endl;
   cout<<"CPU time (min)  = "<<(Float_t)timer.CpuTime()/60<<endl;
-  cout<<"Real time (min) = "<<(Float_t)timer.RealTime()/60<<endl;
+  cout<<"Real time (min) = "<<(Float_t)timer.RealTime()/60<<endl;  
   
-
 }

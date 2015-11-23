@@ -6,13 +6,13 @@ counter=0
 incrementer=1
 
 destination=/mnt/hadoop/cms/store/user/rkunnawa/Run2/PromptForest_checks/
-filelist=PP_MC_forests_pthat80.txt
+filelist=PP_MC_forests.txt
 
 nFiles=`wc -l < $filelist`
 tardir=`pwd`
 radius=4
 coll="PP"
-run="Data"
+run="MC"
 algo=""
 jetType="Calo"
 
@@ -22,9 +22,9 @@ while [ $counter -lt $1 ]
 do
     echo $counter >> Submitted
     
-    Error="ak$algo$radius$jetType-PbPbMC-$endfile.err"
-    Output="ak$algo$radius$jetType-PbPbMC-$endfile.out"
-    Log="ak$algo$radius$jetType-PbPbMC-$endfile.log"
+    Error="ak$algo$radius$jetType-$coll$run-$endfile.err"
+    Output="ak$algo$radius$jetType-$coll$run-$endfile.out"
+    Log="ak$algo$radius$jetType-$coll$run-$endfile.log"
     
     startfile=$(( $counter * $2 ))
     endfile=$(( ($counter + 1) * $2 ))
@@ -42,7 +42,7 @@ Environment = "HOSTNAME=$HOSTNAME"
 # files will be copied back to this dir
 # Initialdir     = .
 #tell condor where my grid certificate it
-#x509userproxy=/tmp/x509up_u2142
+x509userproxy=/tmp/x509up_u2142
 # run my script
 Executable     = mc_condor_run.sh
 +AccountingGroup = "group_cmshi.rkunnawa"

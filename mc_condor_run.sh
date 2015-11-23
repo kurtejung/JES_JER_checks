@@ -5,6 +5,9 @@ tar -xvf run_MC.tar > /dev/null
 export SCRAM_ARCH=slc6_amd64_gcc491
 source /osg/app/cmssoft/cms/cmsset_default.sh
 
+#export X509_USER_PROXY=/tmp/x509up_u2142
+#voms-proxy-init --noregen
+
 echo ""
 echo "----------------------------------------------------"
 echo "Job started on `date` at WN: `hostname` "
