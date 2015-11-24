@@ -51,8 +51,10 @@ static const double xsecs[12] = {5.269E-01, 3.455E-02, 4.068E-03, 4.959E-04, 7.0
 static const double weight_xsec[9] = { 7.20357e-07, 4.51655e-08, 2.6964e-09, 2.77274e-10, 3.1878e-11, 3.87126e-12, 1.62138e-12, 1.09471e-12, 4.40012e-13};
 static const int nentries_file[9] = { 0, 333206, 250567, 395126, 368126, 366982, 392206, 181018, 50455};
 
-const int ptbins[] = {50, 80, 120, 200, 300};
+const int ptbins[] = {50, 80, 120, 170, 220, 300};
+const double ptbins_bound[] = {50, 80, 120, 170, 220, 300};
 const int nbins_pt = sizeof(ptbins)/sizeof(int) -1;
+
 
 const double etabins[] = {-5.191, -2.650, -2.043, -1.740, -1.479, -1.131, -0.783, -0.522, 0.522, 0.783, 1.131, 1.479, 1.740, 2.043, 2.650, 5.191};
 const int nbins_eta = sizeof(etabins)/sizeof(double) -1;
@@ -62,10 +64,15 @@ const int nbins_eta = sizeof(etabins)/sizeof(double) -1;
 /* const char *cdir[ncen]  = {"010","1020","2030","3040","4050","5060","6070","7080","8090","90100"}; */
 /* const char *ccent[ncen] = {"0-10%","10-20%","20-30%","30-50%","40-50%","50-60%","60-70%","70-80%","80-90%","90-100%"}; */
 
-const int ncen=4;
-const int centbins[ncen+1] = {0, 20, 60, 100, 200};
-const char *cdir[ncen+1]  = {"010","1030","3050","50100", "PP"};
-const char *ccent[ncen+1] = {"0-10%","10-30%","30-50%","50-100%", "PP"};
+/* const int ncen=4; */
+/* const int centbins[ncen+1] = {0, 20, 60, 100, 200}; */
+/* const char *cdir[ncen+1]  = {"010","1030","3050","50100", "PP"}; */
+/* const char *ccent[ncen+1] = {"0-10%","10-30%","30-50%","50-100%", "PP"}; */
+
+const int ncen=6;
+const int centbins[ncen+1] = {0, 10, 20, 60, 100, 140, 180};
+const char *cdir[ncen+1]  = {"05","510","1030","3050", "5070", "7090", "PP"};
+const char *ccent[ncen+1] = {"0-5%","5-10%", "10-30%","30-50%","50-70%", "70-90%", "PP"};
 
 const int knj = 1;
 std::string srad[knj]={"4"};

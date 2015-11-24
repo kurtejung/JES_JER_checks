@@ -191,7 +191,7 @@ void Validate_Jets(int startfile = 0,
     
   if(printDebug) cout<<"Running through all the events now"<<endl;
   //Long64_t nentries = jtTree[0]->GetEntries();
-  Long64_t nentries = 100000;
+  Long64_t nentries = 1000000;
   if(printDebug) nentries = 500;
   TRandom rnd;
   
@@ -208,6 +208,7 @@ void Validate_Jets(int startfile = 0,
       if(jt.pcollisionEventSelection_F==0) continue;
       if(jt.pHBHENoiseFilter_F == 0) continue;
       if(fabs(jt.vz_F)>15) continue;
+      if(jt.jet80_F) continue;
     }
     hRunN_vs_NJets->Fill(jt.run_F, jt.nref_F);
     hVz->Fill(jt.vz_F);
