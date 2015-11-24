@@ -10,10 +10,10 @@ using namespace std;
 void Validate_Jets(int startfile = 0,
 		   int endfile = 1,
 		   int radius = 4,
-		   std::string coll= "PbPb",
+		   std::string coll= "PP",
 		   std::string run= "Data",
-		   std::string jetType= "Calo",
-		   std::string algo= "Vs",
+		   std::string jetType= "PF",
+		   std::string algo= "",
 		   std::string kFoname="PromptForest")
 {
 
@@ -28,8 +28,8 @@ void Validate_Jets(int startfile = 0,
   bool doBjets = true;
   std::string bJetString = "";
   if(doBjets) bJetString = "_withBjets";
-  bool skipPho30 = true;
-  bool printDebug = true;
+  bool skipPho30 = false;
+  bool printDebug = false;
   bool doDijetImbalance = true;
   if(printDebug)cout<<"radius = "<<radius<<endl;
   
@@ -37,7 +37,7 @@ void Validate_Jets(int startfile = 0,
 
   std::string infile_Forest;
 
-  infile_Forest = Form("%s_%s_ExpressForest.txt", coll.c_str(), run.c_str());
+  infile_Forest = Form("%s_%s_forests.txt", coll.c_str(), run.c_str());
   std::ifstream instr_Forest(infile_Forest.c_str(),std::ifstream::in);
   std::string filename_Forest;
   
@@ -62,8 +62,8 @@ void Validate_Jets(int startfile = 0,
   dir[3] = "hiEvtAnalyzer";
   if(jetType == "Calo") dir[4] = "rechitanalyzer" ;
   if(jetType == "PF") dir[4] = "pfcandAnalyzer" ;
+  //dir[5] = "hltobject";
   if(run == "MC") dir[5] = "runAnalyzer";
-  // dir[4] = "hltobject";
 
   string trees[N];
   trees[0] = "HltTree";
@@ -71,13 +71,13 @@ void Validate_Jets(int startfile = 0,
   trees[2] = "t";
   // trees[3] = "t";
   trees[3] = "HiTree";
-    // , "jetObjTree"
   if(jetType == "Calo") trees[4] = "tower" ;
   if(jetType == "PF") trees[4] = "pfTree" ;
+  //trees[5] = "jetObjTree";
   if(run == "MC") trees[5] = "run";
 
-  int NLoop = 5;
-  if(run == "MC") NLoop = 6;
+  int NLoop = N-1;
+  if(run == "MC") NLoop = N;
   
   for(int t = 0;t<NLoop;t++){
     jtTree[t] = new TChain(string(dir[t]+"/"+trees[t]).data());
@@ -92,6 +92,7 @@ void Validate_Jets(int startfile = 0,
     jtTree[2]->Add(filename_Forest.c_str());
     jtTree[3]->Add(filename_Forest.c_str());
     jtTree[4]->Add(filename_Forest.c_str());
+    //jtTree[5]->Add(filename_Forest.c_str());
     if(run == "MC") jtTree[5]->Add(filename_Forest.c_str());
     
     cout<<"filename: "<<filename_Forest<<endl;
@@ -106,6 +107,8 @@ void Validate_Jets(int startfile = 0,
     if(printDebug)cout << "Entries : " << jtTree[3]->GetEntries() << endl;
     if(printDebug)cout << "Tree loaded  " << string(dir[4]+"/"+trees[4]).data() << endl;
     if(printDebug)cout << "Entries : " << jtTree[4]->GetEntries() << endl;
+    //if(printDebug)cout << "Tree loaded  " << string(dir[5]+"/"+trees[5]).data() << endl;
+    //if(printDebug)cout << "Entries : " << jtTree[5]->GetEntries() << endl;
 
     if(run == "MC") {
       if(printDebug)cout << "Tree loaded  " << string(dir[5]+"/"+trees[5]).data() << endl;
@@ -119,6 +122,7 @@ void Validate_Jets(int startfile = 0,
   jtTree[2]->AddFriend(jtTree[1]);
   jtTree[2]->AddFriend(jtTree[3]);
   jtTree[2]->AddFriend(jtTree[4]);
+  //jtTree[2]->AddFriend(jtTree[5]);
   if(run == "MC") jtTree[2]->AddFriend(jtTree[5]);
   
   //jtTree[3]->AddFriend(jtTree[0]);
@@ -157,6 +161,31 @@ void Validate_Jets(int startfile = 0,
   int jet80_F;
   int jet100_F;
   int jetMB_F;
+
+  // for pp prompt reco
+  int jetMB_p0_F;
+  int jetMB_p1_F;
+  int jetMB_p2_F;
+  int jetMB_p3_F;
+  int jetMB_p4_F;
+  int jetMB_p5_F;
+  int jetMB_p6_F;
+  int jetMB_p7_F;
+  int jetMB_p8_F;
+  int jetMB_p9_F;
+  int jetMB_p10_F;
+  int jetMB_p11_F;
+  int jetMB_p12_F;
+  int jetMB_p13_F;
+  int jetMB_p14_F;
+  int jetMB_p15_F;
+  int jetMB_p16_F;
+  int jetMB_p17_F;
+  int jetMB_p18_F;
+  int jetMB_p19_F;
+
+  int L1_MB_F;
+  
   int L1_sj36_F;
   int L1_sj52_F;
   int L1_sj36_p_F;
@@ -215,9 +244,6 @@ void Validate_Jets(int startfile = 0,
   if(run == "MC"){
     jtTree[5]->SetBranchAddress("xsec",&crossSection_F);
   }
-
-  //float calopt_F[1000];
-  //jtTree[3]->SetBranchAddress("jtpt",&calopt_F);
   
   jtTree[3]->SetBranchAddress("evt",&evt_F);
   jtTree[3]->SetBranchAddress("run",&run_F);
@@ -266,16 +292,38 @@ void Validate_Jets(int startfile = 0,
   jtTree[2]->SetBranchAddress("muMax",muMax_F);
 
   if(coll == "PP"){
-    jtTree[0]->SetBranchAddress("HLT_L1MinimumBiasHF1OR_part1_v1",&jetMB_F);
-    //jtTree[0]->SetBranchAddress("HLT_L1MinimumBiasHF1OR_part1_v1_Prescl",&jetMB_p_F);  
+
+    jtTree[0]->SetBranchAddress("L1_MinimumBiasHF1_OR",&L1_MB_F);
+    
+    jtTree[0]->SetBranchAddress("HLT_L1MinimumBiasHF1OR_part0_v1",&jetMB_p0_F);  
+    jtTree[0]->SetBranchAddress("HLT_L1MinimumBiasHF1OR_part1_v1",&jetMB_p1_F);  
+    jtTree[0]->SetBranchAddress("HLT_L1MinimumBiasHF1OR_part2_v1",&jetMB_p2_F);  
+    jtTree[0]->SetBranchAddress("HLT_L1MinimumBiasHF1OR_part3_v1",&jetMB_p3_F);  
+    jtTree[0]->SetBranchAddress("HLT_L1MinimumBiasHF1OR_part4_v1",&jetMB_p4_F);  
+    jtTree[0]->SetBranchAddress("HLT_L1MinimumBiasHF1OR_part5_v1",&jetMB_p5_F);  
+    jtTree[0]->SetBranchAddress("HLT_L1MinimumBiasHF1OR_part6_v1",&jetMB_p6_F);  
+    jtTree[0]->SetBranchAddress("HLT_L1MinimumBiasHF1OR_part7_v1",&jetMB_p7_F);  
+    jtTree[0]->SetBranchAddress("HLT_L1MinimumBiasHF1OR_part8_v1",&jetMB_p8_F);  
+    jtTree[0]->SetBranchAddress("HLT_L1MinimumBiasHF1OR_part9_v1",&jetMB_p9_F);  
+    jtTree[0]->SetBranchAddress("HLT_L1MinimumBiasHF1OR_part10_v1",&jetMB_p10_F);  
+    jtTree[0]->SetBranchAddress("HLT_L1MinimumBiasHF1OR_part11_v1",&jetMB_p11_F);  
+    jtTree[0]->SetBranchAddress("HLT_L1MinimumBiasHF1OR_part12_v1",&jetMB_p12_F);  
+    jtTree[0]->SetBranchAddress("HLT_L1MinimumBiasHF1OR_part13_v1",&jetMB_p13_F);  
+    jtTree[0]->SetBranchAddress("HLT_L1MinimumBiasHF1OR_part14_v1",&jetMB_p14_F);  
+    jtTree[0]->SetBranchAddress("HLT_L1MinimumBiasHF1OR_part15_v1",&jetMB_p15_F);  
+    jtTree[0]->SetBranchAddress("HLT_L1MinimumBiasHF1OR_part16_v1",&jetMB_p16_F);  
+    jtTree[0]->SetBranchAddress("HLT_L1MinimumBiasHF1OR_part17_v1",&jetMB_p17_F);  
+    jtTree[0]->SetBranchAddress("HLT_L1MinimumBiasHF1OR_part18_v1",&jetMB_p18_F);  
+    jtTree[0]->SetBranchAddress("HLT_L1MinimumBiasHF1OR_part19_v1",&jetMB_p19_F);  
+
     jtTree[0]->SetBranchAddress(Form("HLT_AK4%sJet40_Eta5p1_v1", jetType.c_str()),&jet40_F);
-    //jtTree[0]->SetBranchAddress(Form("HLT_AK4%sJet40_Eta5p1_v1_Prescl"jetType.c_str()),&jet40_p_F);
+    jtTree[0]->SetBranchAddress(Form("HLT_AK4%sJet40_Eta5p1_v1_Prescl",jetType.c_str()),&jet40_p_F);
     jtTree[0]->SetBranchAddress(Form("HLT_AK4%sJet60_Eta5p1_v1", jetType.c_str()),&jet60_F);
-    //jtTree[0]->SetBranchAddress(Form("HLT_AK4%sJet60_Eta5p1_v1_Prescl"jetType.c_str()),&jet60_p_F);
+    jtTree[0]->SetBranchAddress(Form("HLT_AK4%sJet60_Eta5p1_v1_Prescl",jetType.c_str()),&jet60_p_F);
     jtTree[0]->SetBranchAddress(Form("HLT_AK4%sJet80_Eta5p1_v1", jetType.c_str()),&jet80_F);
-    //jtTree[0]->SetBranchAddress(Form("HLT_AK4%sJet80_Eta5p1_v1_Prescl"jetType.c_str()),&jet80_p_F);
+    jtTree[0]->SetBranchAddress(Form("HLT_AK4%sJet80_Eta5p1_v1_Prescl",jetType.c_str()),&jet80_p_F);
     jtTree[0]->SetBranchAddress(Form("HLT_AK4%sJet100_Eta5p1_v1", jetType.c_str()),&jet100_F);
-    //jtTree[0]->SetBranchAddress(Form("HLT_AK4%sJet100_Eta5p1_v1_Prescl"jetType.c_str()),&jet100_p_F);
+    jtTree[0]->SetBranchAddress(Form("HLT_AK4%sJet100_Eta5p1_v1_Prescl",jetType.c_str()),&jet100_p_F);
     jtTree[0]->SetBranchAddress("HLT_HISinglePhoton30_Eta1p5_v1",&photon30_F);
     jtTree[0]->SetBranchAddress("HLT_AK4PFBJetBSSV60_Eta2p1_v1",&ssvTrg60_F);
     jtTree[0]->SetBranchAddress("HLT_AK4PFBJetBSSV80_Eta2p1_v1",&ssvTrg80_F);
@@ -512,17 +560,23 @@ void Validate_Jets(int startfile = 0,
       
     }// pf cands loop
     
-    
-    if(jetMB_F) hMBSpectra[centbin]->Fill(pt_F[0]);
-    if(jetMB_F && jet40_F) hJet40andMB[centbin]->Fill(pt_F[0]);
-    if(jetMB_F && jet60_F) hJet60andMB[centbin]->Fill(pt_F[0]);
-    if(jetMB_F && jet80_F) hJet80andMB[centbin]->Fill(pt_F[0]);
-    if(jetMB_F && jet100_F) hJet100andMB[centbin]->Fill(pt_F[0]);
+    // selecting on all the MB bits to get one MB bit. 
+    if(L1_MB_F && (jetMB_p0_F || jetMB_p1_F || jetMB_p2_F || jetMB_p3_F || jetMB_p4_F || jetMB_p5_F || jetMB_p6_F || jetMB_p7_F || jetMB_p8_F || jetMB_p9_F || jetMB_p10_F || jetMB_p11_F || jetMB_p12_F || jetMB_p13_F || jetMB_p14_F || jetMB_p15_F || jetMB_p16_F || jetMB_p17_F || jetMB_p18_F || jetMB_p19_F))
+      jetMB_F = 1;
 
-    if(jet40_F) hJet40[centbin]->Fill(pt_F[0]);
-    if(jet60_F) hJet60[centbin]->Fill(pt_F[0]);
-    if(jet80_F) hJet80[centbin]->Fill(pt_F[0]);
-    if(jet100_F) hJet100[centbin]->Fill(pt_F[0]);
+    if(printDebug) cout<<"MinBias bit = "<<jetMB_F<<endl;
+
+    if(jetMB_F)
+      hMBSpectra[centbin]->Fill(pt_F[0]);
+    if(jetMB_F && jet40_F) hJet40andMB[centbin]->Fill(pt_F[0], jet40_p_F);
+    if(jetMB_F && jet60_F) hJet60andMB[centbin]->Fill(pt_F[0], jet60_p_F);
+    if(jetMB_F && jet80_F) hJet80andMB[centbin]->Fill(pt_F[0], jet80_p_F);
+    if(jetMB_F && jet100_F) hJet100andMB[centbin]->Fill(pt_F[0], jet100_p_F);
+
+    if(jet40_F) hJet40[centbin]->Fill(pt_F[0], jet40_p_F);
+    if(jet60_F) hJet60[centbin]->Fill(pt_F[0], jet60_p_F);
+    if(jet80_F) hJet80[centbin]->Fill(pt_F[0], jet80_p_F);
+    if(jet100_F) hJet100[centbin]->Fill(pt_F[0], jet100_p_F);
     
     if(nref_F >=3 && doDijetImbalance) {
 
@@ -624,10 +678,10 @@ void Validate_Jets(int startfile = 0,
     
     for(int ijet=0; ijet<nref_F; ijet++){
 
-      if(jet40_F) hJet40All[centbin]->Fill(pt_F[ijet]);
-      if(jet60_F) hJet60All[centbin]->Fill(pt_F[ijet]);
-      if(jet80_F) hJet80All[centbin]->Fill(pt_F[ijet]);
-      if(jet100_F) hJet100All[centbin]->Fill(pt_F[ijet]);
+      if(jet40_F) hJet40All[centbin]->Fill(pt_F[ijet], jet40_p_F);
+      if(jet60_F) hJet60All[centbin]->Fill(pt_F[ijet], jet60_p_F);
+      if(jet80_F) hJet80All[centbin]->Fill(pt_F[ijet], jet80_p_F);
+      if(jet100_F) hJet100All[centbin]->Fill(pt_F[ijet], jet100_p_F);
 
       if(doBjets){
 	discrSSVHE[centbin]->Fill(discr_ssvHighEff_F[ijet]);
@@ -688,6 +742,39 @@ void Validate_Jets(int startfile = 0,
     } //data
 
   }// nevents
+
+  TH1F * hJet40Turnon[ncen+1];
+  TH1F * hJet60Turnon[ncen+1];
+  TH1F * hJet80Turnon[ncen+1];
+  TH1F * hJet100Turnon[ncen+1];
+  
+  if(run == "Data"){
+
+    if(coll == "PbPb"){
+      for(int icen = 0; icen<ncen; ++icen){
+	hJet40Turnon[icen] = (TH1F*)hJet40andMB[icen]->Clone(Form("hJet40Turnon_%s",cdir[icen]));
+	hJet60Turnon[icen] = (TH1F*)hJet60andMB[icen]->Clone(Form("hJet60Turnon_%s",cdir[icen]));
+	hJet80Turnon[icen] = (TH1F*)hJet80andMB[icen]->Clone(Form("hJet80Turnon_%s",cdir[icen]));
+	hJet100Turnon[icen] = (TH1F*)hJet100andMB[icen]->Clone(Form("hJet100Turnon_%s",cdir[icen])); 
+      hJet40Turnon[icen]->Divide(hMBSpectra[icen]);
+      hJet60Turnon[icen]->Divide(hMBSpectra[icen]);
+      hJet80Turnon[icen]->Divide(hMBSpectra[icen]);
+      hJet100Turnon[icen]->Divide(hMBSpectra[icen]);
+      }
+    }
+
+    if(coll == "PP"){
+      hJet40Turnon[ncen] = (TH1F*)hJet40andMB[ncen]->Clone("hJet40Turnon_PP");
+      hJet60Turnon[ncen] = (TH1F*)hJet60andMB[ncen]->Clone("hJet60Turnon_PP");
+      hJet80Turnon[ncen] = (TH1F*)hJet80andMB[ncen]->Clone("hJet80Turnon_PP");
+      hJet100Turnon[ncen] = (TH1F*)hJet100andMB[ncen]->Clone("hJet100Turnon_PP"); 
+      hJet40Turnon[ncen]->Divide(hMBSpectra[ncen]);
+      hJet60Turnon[ncen]->Divide(hMBSpectra[ncen]);
+      hJet80Turnon[ncen]->Divide(hMBSpectra[ncen]);
+      hJet100Turnon[ncen]->Divide(hMBSpectra[ncen]);
+    }
+  }
+    
   
   fout->Write();
   

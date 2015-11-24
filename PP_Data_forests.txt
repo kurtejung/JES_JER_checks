@@ -1,16 +1,1 @@
-root://cms-xrd-global.cern.ch//store/group/phys_heavyions/velicanu/forest/Run2015E/ExpressPhysics/Merged/ExpressHiForest_run262163_277558_jec.root
-root://cms-xrd-global.cern.ch//store/group/phys_heavyions/velicanu/forest/Run2015E/ExpressPhysics/Merged/ExpressHiForest_run262165_102426_jec.root
-root://cms-xrd-global.cern.ch//store/group/phys_heavyions/velicanu/forest/Run2015E/ExpressPhysics/Merged/ExpressHiForest_run262165_102426_jec.root
-root://cms-xrd-global.cern.ch//store/group/phys_heavyions/velicanu/forest/Run2015E/ExpressPhysics/Merged/ExpressHiForest_run262169_78899_jec.root 
-root://cms-xrd-global.cern.ch//store/group/phys_heavyions/velicanu/forest/Run2015E/ExpressPhysics/Merged/ExpressHiForest_run262170_94070_jec.root 
-root://cms-xrd-global.cern.ch//store/group/phys_heavyions/velicanu/forest/Run2015E/ExpressPhysics/Merged/ExpressHiForest_run262171_269452_jec.root 	
-root://cms-xrd-global.cern.ch//store/group/phys_heavyions/velicanu/forest/Run2015E/ExpressPhysics/Merged/ExpressHiForest_run262172_261242_jec.root
-root://cms-xrd-global.cern.ch//store/group/phys_heavyions/velicanu/forest/Run2015E/ExpressPhysics/Merged/ExpressHiForest_run262173_244963_jec.root
-root://cms-xrd-global.cern.ch//store/group/phys_heavyions/velicanu/forest/Run2015E/ExpressPhysics/Merged/ExpressHiForest_run262204_138208_match.root 	
-root://cms-xrd-global.cern.ch//store/group/phys_heavyions/velicanu/forest/Run2015E/ExpressPhysics/Merged/ExpressHiForest_run262205_513167_match.root 
-root://cms-xrd-global.cern.ch//store/group/phys_heavyions/velicanu/forest/Run2015E/ExpressPhysics/Merged/ExpressHiForest_run262235_708331_match.root
-root://cms-xrd-global.cern.ch//store/group/phys_heavyions/velicanu/forest/Run2015E/ExpressPhysics/Merged/ExpressHiForest_run262248_2357_match.root 
-root://cms-xrd-global.cern.ch//store/group/phys_heavyions/velicanu/forest/Run2015E/ExpressPhysics/Merged/ExpressHiForest_run262249_65165_match.root 
-root://cms-xrd-global.cern.ch//store/group/phys_heavyions/velicanu/forest/Run2015E/ExpressPhysics/Merged/ExpressHiForest_run262250_122302_match.root
-root://cms-xrd-global.cern.ch//store/group/phys_heavyions/velicanu/forest/Run2015E/ExpressPhysics/Merged/ExpressHiForest_run262252_289210_match.root
-root://cms-xrd-global.cern.ch//store/group/phys_heavyions/velicanu/forest/Run2015E/ExpressPhysics/Merged/ExpressHiForest_run262254_279593_match.root
+root://eoscms//eos/cms/store/group/phys_heavyions/velicanu/forest/Run2015E/PromptReco/MinimumBias/HiForest_pp_run262163PromptReco_7M.root
