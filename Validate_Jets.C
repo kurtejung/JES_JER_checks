@@ -506,9 +506,11 @@ void Validate_Jets(int startfile = 0,
   }// cent loop
     
   if(printDebug) cout<<"Running through all the events now"<<endl;
-  Long64_t nentries = jtTree[0]->GetEntries();
+  //Long64_t nentries = jtTree[0]->GetEntries();
+  Long64_t nentries = 100000;
   if(printDebug) nentries = 500;
   TRandom rnd;
+  
 
   for(int nEvt = 0; nEvt < nentries; ++ nEvt) {
 
@@ -643,11 +645,11 @@ void Validate_Jets(int startfile = 0,
 	    }
 	    if(avgpTbin !=-1){
 	      
-	      hRelResponse[avgpTbin][centbin]->Fill(dijetbalanceparameter);
+	      if(jet80_F) hRelResponse[avgpTbin][centbin]->Fill(dijetbalanceparameter);
 	      
 	      //FILL OUTERETA HISTOGRAMS
 	      if (probeeta < -1.3 || probeeta > 1.3){
-		hRelResponse_outereta[avgpTbin][centbin]->Fill(dijetbalanceparameter);
+		if(jet80_F) hRelResponse_outereta[avgpTbin][centbin]->Fill(dijetbalanceparameter);
 	      }
 	      
 	      if (refeta > -1.3 && refeta < 1.3 && probeeta > -1.3 && probeeta < 1.3) {
@@ -660,7 +662,7 @@ void Validate_Jets(int startfile = 0,
 		  dijetbalanceparameter = 2*(referencept - probept)/(probept + referencept);
 		}
 		//FILL INNERETA HISTOGRAMS
-		hRelResponse_innereta[avgpTbin][centbin]->Fill(dijetbalanceparameter);
+		if(jet80_F) hRelResponse_innereta[avgpTbin][centbin]->Fill(dijetbalanceparameter);
 	      }//refeta, probeeta if statement
 	      
 	    }// avg pT bin
