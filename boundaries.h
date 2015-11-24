@@ -1,3 +1,6 @@
+#ifndef __boundaries_h_
+#define __boundaries_h_
+
 #include <iostream>
 #include <stdio.h>
 #include <fstream>
@@ -36,6 +39,9 @@
 #include "TLine.h"
 
 #define NOBJECT_MAX 16384
+
+const bool printDebug=false;
+const bool doBjets = true;
 
 // boundaries of the pt bins, cent bins and eta bins for the runForest and plot macros.
 
@@ -187,3 +193,5 @@ bool compare_pt(Jet jet1, Jet jet2){
 
 float LjCut = 100.0;
 float SbjCut = 40.0;
+
+#endif
