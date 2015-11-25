@@ -40,7 +40,7 @@
 
 #define NOBJECT_MAX 16384
 
-const bool printDebug=false;
+const bool printDebug=true;
 const bool doBjets = true;
 
 // boundaries of the pt bins, cent bins and eta bins for the runForest and plot macros.

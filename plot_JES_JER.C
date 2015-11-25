@@ -90,7 +90,7 @@ void FitDist(TH1F *&/*hrsp*/, double &/*mean*/, double &/*emean*/, double &/*sig
 
 int plot_JES_JER(int wJetID=1,
 		 std::string algo = "Pu",
-		 std::string jetType = "PF")
+		 std::string jetType = "Calo")
 {
   int iSave=1;
 

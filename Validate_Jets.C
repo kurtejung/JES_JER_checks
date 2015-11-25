@@ -13,7 +13,7 @@ void Validate_Jets(int startfile = 0,
 		   int radius = 4,
 		   std::string coll= "PP",
 		   std::string run= "Data",
-		   std::string jetType= "PF",
+		   std::string jetType= "Calo",
 		   std::string algo= "",
 		   std::string kFoname="PromptForest")
 {
@@ -78,6 +78,7 @@ void Validate_Jets(int startfile = 0,
 
   TH2F * hRunN_vs_NJets = new TH2F("hRunN_Vs_NJets","",719, 261445, 262164, 50, 0, 50);
   TH1F * hVz = new TH1F("hVz","Primary Vertex Z position;v_{z};counts",200, -20, 20);
+  TH1F * hCent = new TH1F("hCent","Centrality (hiBin);0.5% Centrality bins;counts",200, 0, 200);
 
   TH1F *hRelResponse[nbins_pt][ncen+1];
   TH1F *hRelResponse_outereta[nbins_pt][ncen+1];
@@ -190,19 +191,29 @@ void Validate_Jets(int startfile = 0,
   }// cent loop
     
   if(printDebug) cout<<"Running through all the events now"<<endl;
-  //Long64_t nentries = jtTree[0]->GetEntries();
-  Long64_t nentries = 1000000;
-  if(printDebug) nentries = 500;
+  Long64_t nentries = jt.jtTree[0]->GetEntries();
+  //Long64_t nentries = 1000000;
+  if(printDebug) nentries = 1;
   TRandom rnd;
   
 
   for(int nEvt = 0; nEvt < nentries; ++ nEvt) {
 
     if(nEvt%10000 == 0)cout<<nEvt<<"/"<<nentries<<endl;
-    if(printDebug)cout<<"nEvt = "<<nEvt<<endl;
-
+    if(printDebug){
+      cout<<"nEvt = "<<nEvt<<endl;
+      cout<<"CPU time (min)  = "<<(Float_t)timer.CpuTime()/60<<endl;
+      cout<<"Real time (min) = "<<(Float_t)timer.RealTime()/60<<endl;
+      timer.Continue();
+    }
     jt.LoadEntries(nEvt, run);
-    
+    if(printDebug){
+      cout<<"After loading the events"<<endl;
+      cout<<"CPU time (min)  = "<<(Float_t)timer.CpuTime()/60<<endl;
+      cout<<"Real time (min) = "<<(Float_t)timer.RealTime()/60<<endl;  
+      timer.Continue();
+    }
+
     if(run == "Data"){
       if(skipPho30 && jt.photon30_F) continue;
       if(jt.pcollisionEventSelection_F==0) continue;
@@ -212,6 +223,14 @@ void Validate_Jets(int startfile = 0,
     }
     hRunN_vs_NJets->Fill(jt.run_F, jt.nref_F);
     hVz->Fill(jt.vz_F);
+    if(coll == "PbPb") hCent->Fill(jt.hiBin_F);
+
+    if(printDebug){
+      cout<<"After Event Selection"<<endl;
+      cout<<"CPU time (min)  = "<<(Float_t)timer.CpuTime()/60<<endl;
+      cout<<"Real time (min) = "<<(Float_t)timer.RealTime()/60<<endl;  
+      timer.Continue();
+    }
 
     // find the centrality bin.
 
@@ -220,6 +239,13 @@ void Validate_Jets(int startfile = 0,
     if(coll == "PbPb") centbin = findBin(jt.hiBin_F);
     if(centbin == -1) continue;
     
+    
+    // selecting on all the MB bits to get one MB bit. 
+    if(jt.L1_MB_F && (jt.jetMB_p0_F || jt.jetMB_p1_F || jt.jetMB_p2_F || jt.jetMB_p3_F || jt.jetMB_p4_F || jt.jetMB_p5_F || jt.jetMB_p6_F || jt.jetMB_p7_F || jt.jetMB_p8_F || jt.jetMB_p9_F || jt.jetMB_p10_F || jt.jetMB_p11_F || jt.jetMB_p12_F || jt.jetMB_p13_F || jt.jetMB_p14_F || jt.jetMB_p15_F || jt.jetMB_p16_F || jt.jetMB_p17_F || jt.jetMB_p18_F || jt.jetMB_p19_F))
+      jt.jetMB_F = 1;
+
+    if(printDebug) cout<<"MinBias bit = "<<jt.jetMB_F<<endl;
+
     for(int npf = 0; npf<jt.nPFpart_F; ++npf){
 
       if(jetType == "Calo"){
@@ -241,12 +267,14 @@ void Validate_Jets(int startfile = 0,
       }
       
     }// pf cands loop
-    
-    // selecting on all the MB bits to get one MB bit. 
-    if(jt.L1_MB_F && (jt.jetMB_p0_F || jt.jetMB_p1_F || jt.jetMB_p2_F || jt.jetMB_p3_F || jt.jetMB_p4_F || jt.jetMB_p5_F || jt.jetMB_p6_F || jt.jetMB_p7_F || jt.jetMB_p8_F || jt.jetMB_p9_F || jt.jetMB_p10_F || jt.jetMB_p11_F || jt.jetMB_p12_F || jt.jetMB_p13_F || jt.jetMB_p14_F || jt.jetMB_p15_F || jt.jetMB_p16_F || jt.jetMB_p17_F || jt.jetMB_p18_F || jt.jetMB_p19_F))
-      jt.jetMB_F = 1;
 
-    if(printDebug) cout<<"MinBias bit = "<<jt.jetMB_F<<endl;
+    if(printDebug){
+      cout<<"after PF cand loop"<<endl;
+      cout<<"CPU time (min)  = "<<(Float_t)timer.CpuTime()/60<<endl;
+      cout<<"Real time (min) = "<<(Float_t)timer.RealTime()/60<<endl;  
+      timer.Continue();
+    }
+
 
     if(jt.jetMB_F)
       hMBSpectra[centbin]->Fill(jt.pt_F[0]);
@@ -357,7 +385,14 @@ void Validate_Jets(int startfile = 0,
       j_array_eta.clear();
       
     }
-    
+
+    if(printDebug){
+      cout<<"after dijet imbalance plots loop"<<endl;
+      cout<<"CPU time (min)  = "<<(Float_t)timer.CpuTime()/60<<endl;
+      cout<<"Real time (min) = "<<(Float_t)timer.RealTime()/60<<endl;  
+      timer.Continue();
+    }
+
     for(int ijet=0; ijet<jt.nref_F; ijet++){
 
       if(jt.jet40_F) hJet40All[centbin]->Fill(jt.pt_F[ijet], jt.jet40_p_F);
@@ -406,6 +441,12 @@ void Validate_Jets(int startfile = 0,
       
     }// njets
 
+    if(printDebug){
+      cout<<"after Jets loop loop"<<endl;
+      cout<<"CPU time (min)  = "<<(Float_t)timer.CpuTime()/60<<endl;
+      cout<<"Real time (min) = "<<(Float_t)timer.RealTime()/60<<endl;  
+    }
+
     if(run == "MC"){
       if(jt.pt_F[0]>LjCut && jt.pt_F[1] >SbjCut){
 	float Aj = (float)(jt.pt_F[0]-jt.pt_F[1])/(jt.pt_F[0]+jt.pt_F[1]);
@@ -422,6 +463,13 @@ void Validate_Jets(int startfile = 0,
       }
 
     } //data
+
+    if(printDebug){
+      cout<<"End of Event loop"<<endl;
+      cout<<"CPU time (min)  = "<<(Float_t)timer.CpuTime()/60<<endl;
+      cout<<"Real time (min) = "<<(Float_t)timer.RealTime()/60<<endl;  
+      timer.Continue();
+   }
 
   }// nevents
 
