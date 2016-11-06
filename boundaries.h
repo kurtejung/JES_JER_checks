@@ -1,3 +1,6 @@
+#ifndef __boundaries_h_
+#define __boundaries_h_
+
 #include <iostream>
 #include <stdio.h>
 #include <fstream>
@@ -37,6 +40,9 @@
 
 #define NOBJECT_MAX 16384
 
+const bool printDebug=false;
+const bool doBjets = false;
+
 // boundaries of the pt bins, cent bins and eta bins for the runForest and plot macros.
 
 static const double pthat[12] = {15, 30, 50, 80, 120, 170, 220, 280, 370, 460, 540, 2000};
@@ -56,19 +62,16 @@ const int nbins_eta = sizeof(etabins)/sizeof(double) -1;
 /* const char *cdir[ncen]  = {"010","1020","2030","3040","4050","5060","6070","7080","8090","90100"}; */
 /* const char *ccent[ncen] = {"0-10%","10-20%","20-30%","30-50%","40-50%","50-60%","60-70%","70-80%","80-90%","90-100%"}; */
 
-const int ncen=4;
-const int centbins[ncen+1] = {0, 20, 60, 100, 200};
-const char *cdir[ncen+1]  = {"010","1030","3050","50100", "PP"};
-const char *ccent[ncen+1] = {"0-10%","10-30%","30-50%","50-100%", "PP"};
-
 const int knj = 1;
 std::string srad[knj]={"4"};
 
 double xmin=ptbins[0];
 double xmax=ptbins[nbins_pt];
 
-
-
+int PbPbcentbins[5] = {0, 20, 60, 100, 200};
+string PbPbcdir[5]  = {"010","1030","3050","50100", "PP"};
+string PbPbccent[5] = {"0-10%","10-30%","30-50%","50-100%", "PP"};
+	
 
 // Adding PF candidates plots
 // 1) 2D histograms for eta vs pT for the candidate types ( for PbPb this needs to be before and after Vs subtraction)
@@ -117,9 +120,9 @@ int findBin(int bin)
 
 int findBin(int bin)
 {
-  int ibin=-1;
+	int ibin=-1;
   //! centrality is defined as 0.5% bins of cross section
-  //! in 0-200 bins               
+  //! in 0-200 bins    
   if(bin<20)ibin=0; //! 0-10%
   else if(bin>=20  && bin<60 )ibin=1; //! 10-30%
   else if(bin>=60  && bin<100 )ibin=2; //! 30-50%
@@ -187,3 +190,5 @@ bool compare_pt(Jet jet1, Jet jet2){
 
 float LjCut = 100.0;
 float SbjCut = 40.0;
+
+#endif
