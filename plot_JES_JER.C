@@ -90,7 +90,7 @@ void FitDist(TH1F *&/*hrsp*/, double &/*mean*/, double &/*emean*/, double &/*sig
 
 int plot_JES_JER(int wJetID=1,
 		 std::string algo = "Pu",
-		 std::string jetType = "PF")
+		 std::string jetType = "Calo")
 {
   int iSave=1;
 
@@ -115,20 +115,23 @@ int plot_JES_JER(int wJetID=1,
   //TFile *fin = new TFile("OutputHist_pawan_ntuples_pp_pbpb_ak3.root","r");
   //TFile *fin = new TFile("OutputHist_raghav_ntuples_pp_pbpb_ak3.root","r");
 
-  TFile *fin = new TFile(Form("PbPb_MC_new_ak%s%s%s_20_eta_20.root",algo.c_str(), srad[0].c_str(), jetType.c_str()),"r");
+  TFile *fin   = new TFile(Form("PbPb_5p02TeV_MC_ak%s_20_eta_20.root",(algo+srad[0]+jetType).c_str()),"r");
+  TFile *finPP = new TFile(Form("PP_5p02TeV_MC_ak%s_20_eta_20.root",(srad[0]+jetType).c_str()),"r");
 
-  TH1F *hrsp [knj][ncen][nbins_pt];
-  TH1F *hMean[knj][ncen], *hSigma[knj][ncen];
+  TH1F *hrsp [knj][ncen+1][nbins_pt];
+  TH1F *hMean[knj][ncen+1], *hSigma[knj][ncen+1];
 
   TF1 *fgaus=0;
 
   for(int nj=0; nj<knj; nj++){
+    cout<<"nj = "<<nj<<endl;
     std::string dirname="ak"+algo+srad[nj]+jetType+"JetAnalyzer";
     std::string algname="ak"+algo+srad[nj]+jetType;
-
-    for(int ic=0; ic<ncen; ic++){
-
-      hMean[nj][ic] = new TH1F(Form("hMean%d_%d",nj,ic),Form("Mean %s %s",algname.c_str(),ccent[ic]),nbins_pt,ptbins);
+    
+    for(int ic=0; ic<=ncen; ic++){
+      cout<<"centbin = "<<ic<<endl;
+      
+      hMean[nj][ic] = new TH1F(Form("hMean%d_%d",nj,ic),Form("Mean %s %s",algname.c_str(),ccent[ic]),nbins_pt,ptbins_bound);
       hMean[nj][ic]->SetMarkerColor(1);
       hMean[nj][ic]->SetMarkerStyle(20);
       hMean[nj][ic]->SetLineColor(1);
@@ -139,7 +142,7 @@ int plot_JES_JER(int wJetID=1,
       MakeHistMean(hMean[nj][ic],1.082,0.858); 
       //MakeHistMean(hMean[nj][ic],1.052,0.934); 
  
-      hSigma[nj][ic] = new TH1F(Form("hSigma%d_%d",nj,ic),Form("Sigma %s %s",algname.c_str(),ccent[ic]),nbins_pt,ptbins);
+      hSigma[nj][ic] = new TH1F(Form("hSigma%d_%d",nj,ic),Form("Sigma %s %s",algname.c_str(),ccent[ic]),nbins_pt,ptbins_bound);
       hSigma[nj][ic]->SetMarkerColor(1);
       hSigma[nj][ic]->SetMarkerStyle(20);
       hSigma[nj][ic]->SetLineColor(1);
@@ -147,11 +150,17 @@ int plot_JES_JER(int wJetID=1,
       MakeHistRMS(hSigma[nj][ic],0.563,0.001); 
 
       for(int ip=0; ip<nbins_pt; ip++){
+	cout<<"ip = "<<ip<<endl;
+	if(ic < ncen)
+	  hrsp[nj][ic][ip]      = (TH1F*)fin->Get(Form("hJER_%d_pt_%d_cent%d",ptbins[ip], ptbins[ip+1],ic));
+	
+	if(ic == ncen)
+	  hrsp[nj][ic][ip]      = (TH1F*)finPP->Get(Form("hJER_%d_pt_%d",ptbins[ip], ptbins[ip+1]));
 
-	hrsp[nj][ic][ip]      = (TH1F*)fin->Get(Form("hJER_ptbin_%d_cent%d",ip,ic));
-	//hrsp[nj][ic][ip]->Scale(1./hrsp[nj][ic][ip]->Integral());
-
-	//hrsp[nj][ic][ip]->Rebin(3);
+	hrsp[nj][ic][ip]->Print("base");
+	hrsp[nj][ic][ip]->Scale(1./hrsp[nj][ic][ip]->Integral());
+	hrsp[nj][ic][ip]->Rebin(3);
+	
 	double norm  = hrsp[nj][ic][ip]->GetMaximumStored();
 	double err   = hrsp[nj][ic][ip]->GetStdDevError();
 	double mean  = hrsp[nj][ic][ip]->GetMean();
@@ -244,20 +253,20 @@ int plot_JES_JER(int wJetID=1,
   // hMean[1][ncen-1]->Draw("psame");
   // return 0;
 
-  int maxc=10;
+  int maxc=7;
   int maxr=2;
   int ipad=0;
 
   gStyle->SetOptStat(0);
   gStyle->SetOptFit(0);
 
-  //TLegend *leg0 = getLegend(0.3950635,0.4625641,0.8242194,0.7497436);
-  TLegend *leg0 = getLegend(0.4418803,0.3887016,0.8692251,0.6763714);  
-  if( wJetID )leg0->SetHeader("w JetID");
-  else leg0->SetHeader("w/o JetID");
+  TLegend *leg0 = getLegend(0.1950635,0.4625641,0.8242194,0.7497436);
+  //TLegend *leg0 = getLegend(0.4418803,0.3887016,0.8692251,0.6763714);  
+  //if( wJetID )leg0->SetHeader("w JetID");
+  //else leg0->SetHeader("w/o JetID");
   leg0->SetTextSize(0.10);
-  leg0->AddEntry(hMean[0][ncen-1],Form("pp ak%sPF",srad[0].c_str()),"p");
-  leg0->AddEntry(hMean[0][0],Form("PbPb akPu%sPF",srad[0].c_str()),"p");
+  leg0->AddEntry(hMean[0][ncen],Form("pp ak%s",(srad[0]+jetType).c_str()),"p");
+  leg0->AddEntry(hMean[0][0],Form("PbPb ak%s",(algo+srad[0]+jetType).c_str()),"p");
   //leg0->AddEntry(hMean_resd[0][0],"Resd. Correc.","p");
   
   TLine *l0 = new TLine(xmin,1.00,xmax,1.0);
@@ -274,7 +283,7 @@ int plot_JES_JER(int wJetID=1,
     makeMultiPanelCanvas(c11[nj],maxc,maxr,0.0,0.0,0.22,0.22,0.02,0);
     ipad=0;
 
-    for(int ic=ncen-1; ic>=0; ic--){
+    for(int ic=ncen; ic>=0; ic--){
 
       c11[nj]->cd(++ipad);
       gPad->SetLogx();
@@ -282,16 +291,16 @@ int plot_JES_JER(int wJetID=1,
       hSigma[nj][ic]->GetXaxis()->SetRangeUser(xmin,xmax);
       hSigma[nj][ic]->Draw("p");
 
-      // hSigma[nj][ncen-1]->SetMarkerColor(2);
-      // hSigma[nj][ncen-1]->SetLineColor(2);
-      //hSigma[nj][ncen-1]->Draw("psame");
+      hSigma[nj][ncen]->SetMarkerColor(2);
+      hSigma[nj][ncen]->SetLineColor(2);
+      hSigma[nj][ncen]->Draw("psame");
 
-      if(ipad==1 && ic==5){
-	drawText2("PYTHIA+HYDJET",0.35,0.85,21);      
+      if(ipad==2 && ic==ncen-1){
+	drawText2("PYTHIA+HYDJET",0.19,0.85,21);
 	leg0->Draw();
       }
-      if(ipad==2 && ic==4){
-	drawText2("#sqrt{s_{NN}} = 2.76 TeV, |#eta| < 2",0.10,0.85,21);
+      if(ipad==3 && ic==4){
+	drawText2("#sqrt{s_{NN}} = 5.02 TeV,|#eta| < 2",0.10,0.85,19);
       }
       // if(ipad==1 && ic==5){
       // 	if(wJetID)drawText2(Form("%s, w JetID",(srad[nj]+jetType).c_str()),0.28,0.60,21);
@@ -303,14 +312,14 @@ int plot_JES_JER(int wJetID=1,
       c11[nj]->cd(ipad+maxc);
       gPad->SetLogx();
     
-      if(ipad!=1)
+      // if(ipad!=1)
       hMean[nj][ic]->GetXaxis()->SetRangeUser(xmin,xmax);
-      hMean[nj][ic]->GetYaxis()->SetRangeUser(0.75,1.05);
+      hMean[nj][ic]->GetYaxis()->SetRangeUser(0.8,1.05);
       hMean[nj][ic]->Draw("p");
-
-      // hMean[nj][ncen-1]->SetMarkerColor(2);
-      // hMean[nj][ncen-1]->SetLineColor(2);
-      // hMean[nj][ncen-1]->Draw("psame");
+      
+      hMean[nj][ncen]->SetMarkerColor(2);
+      hMean[nj][ncen]->SetLineColor(2);
+      hMean[nj][ncen]->Draw("psame");
 
       l1->Draw();
       l0->Draw();

@@ -19,7 +19,6 @@ public:
 
 		if(printDebug)cout<<"reading from "<<startfile<<" to "<<endfile<<endl;
         if(!instr_Forest){ cout << "Cannot find " << infile_Forest << "!" << endl; exit(0); }
-        cout << "loading file " << infile_Forest << endl;
 
 		for(int ifile = 0;ifile<startfile;ifile++){
 			instr_Forest>>filename_Forest;
@@ -61,7 +60,6 @@ public:
         for(int ifile = startfile; ifile<endfile; ++ifile){
 
         	instr_Forest>>filename_Forest;
-            cout << "loading " << filename_Forest << endl;
 
         	jtTree[0]->Add(filename_Forest.c_str());
         	jtTree[1]->Add(filename_Forest.c_str());
@@ -70,6 +68,7 @@ public:
         	jtTree[4]->Add(filename_Forest.c_str());
     //jtTree[5]->Add(filename_Forest.c_str());
         	if(run == "MC") jtTree[5]->Add(filename_Forest.c_str());
+
             jtTree[6]->Add(filename_Forest.c_str());
 
         	cout<<"filename: "<<filename_Forest<<endl;
@@ -123,6 +122,7 @@ public:
         	jtTree[4]->SetBranchAddress("pfVsPtInitial", &pfVsPtInitial_F);
         	jtTree[4]->SetBranchAddress("pfEta", &pfEta_F);
         	jtTree[4]->SetBranchAddress("pfPhi", &pfPhi_F);
+
         }
 
         if(run == "MC"){
@@ -154,6 +154,7 @@ public:
         
         if(coll == "PbPb")jtTree[1]->SetBranchAddress("pcollisionEventSelection",&pcollisionEventSelection_F);
         jtTree[1]->SetBranchAddress("HBHENoiseFilterResultRun2Loose",&pHBHENoiseFilter_F);
+
   // jtTree[0]->SetBranchAddress("pprimaryvertexFilter",&pprimaryvertexFilter_F);
   // jtTree[0]->SetBranchAddress("pVertexFilterCutGplus",&pVertexFilterCutGplus_F);
         if(run == "MC") jtTree[2]->SetBranchAddress("pthat",&pthat_F);
@@ -249,9 +250,7 @@ public:
             jtTree[0]->SetBranchAddress("HLT_PASinglePhoton30_Eta3p1_v2",&photon30_F);
             jtTree[0]->SetBranchAddress("HLT_PAAK4CaloBJetCSV60_Eta2p1_v1",&csvTrg60_F);
             jtTree[0]->SetBranchAddress("HLT_PAAK4CaloBJetCSV80_Eta2p1_v1",&csvTrg80_F);
-
         }
-
         if(coll == "PbPb"){
         	jtTree[0]->SetBranchAddress("",&jetMB_F);
     //jtTree[0]->SetBranchAddress("HLT_L1MinimumBiasHF1OR_part1_v1_Prescl",&jetMB_p_F);  
@@ -283,7 +282,7 @@ public:
     	jtTree[2]->GetEntry(nEvt);
     	jtTree[3]->GetEntry(nEvt);
     	jtTree[4]->GetEntry(nEvt);
-    	jtTree[5]->GetEntry(nEvt);
+    	if(run == "MC") jtTree[5]->GetEntry(nEvt);
         jtTree[6]->GetEntry(nEvt);
     };
 public:
