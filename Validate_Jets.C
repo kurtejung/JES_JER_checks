@@ -227,7 +227,7 @@ void Validate_Jets(int startfile = 0,
 		if(nEvt%10000 == 0)cout<<nEvt<<"/"<<nentries<<endl;
 		if(printDebug)cout<<"nEvt = "<<nEvt<<endl;
 
-		jt.LoadEntries(nEvt);
+		jt.LoadEntries(nEvt, run);
 		
 		if(run == "Data"){
 			if(skipPho30 && jt.photon30_F) continue;

@@ -276,7 +276,7 @@ public:
   // jtTree[0]->SetBranchAddress("L1_SingleJet52_BptxAND_Prescl",&L1_sj52_p_F);
 
     };
-    void LoadEntries(int nEvt){
+    void LoadEntries(int nEvt, string run){
     	jtTree[0]->GetEntry(nEvt);
     	jtTree[1]->GetEntry(nEvt);
     	jtTree[2]->GetEntry(nEvt);
