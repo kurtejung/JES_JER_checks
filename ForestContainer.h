@@ -10,10 +10,9 @@ class ForestContainer{
 
 public:
 
-	ForestContainer(int startfile, int endfile, int radius, string coll, string run, string jetType, string algo){
+	ForestContainer(int startfile, int endfile, string infile_Forest, int radius, string coll, string run, string jetType, string algo){
 
-		std::string infile_Forest;
-		infile_Forest = Form("%s_%s_forests.txt", coll.c_str(), run.c_str());
+		//infile_Forest = Form("%s_%s_forests.txt", coll.c_str(), run.c_str());
 		std::ifstream instr_Forest(infile_Forest.c_str(),std::ifstream::in);
 		std::string filename_Forest;
 
@@ -24,11 +23,22 @@ public:
 			instr_Forest>>filename_Forest;
 		}
 
+		pfId_F=0;
+		pfPt_F=0;
+		pfVsPtInitial_F=0;
+		pfEta_F=0;
+		pfPhi_F=0;
+
+		rho=0;
+		rhoM=0;
+		etaMax=0;
+
         string dir[N];
         dir[0] = "hltanalysis";
         dir[1] = "skimanalysis";
         dir[2] = "";
-        if(coll == "PbPb") dir[2] = Form("ak%s%d%sJetAnalyzer", algo.c_str(), radius, jetType.c_str());
+        cout << "Looking for " << Form("ak%s%d%sJetAnalyzer", algo.c_str(), radius, jetType.c_str()) << " jets..." << endl;
+	if(coll == "PbPb") dir[2] = Form("ak%s%d%sJetAnalyzer", algo.c_str(), radius, jetType.c_str());
         if(coll == "pPb") dir[2] = Form("ak%s%d%sJetAnalyzer", algo.c_str(), radius, jetType.c_str());
         if(coll == "PP") dir[2] = Form("ak%d%sJetAnalyzer", radius, jetType.c_str());
         dir[3] = "hiEvtAnalyzer";
@@ -57,6 +67,20 @@ public:
         	jtTree[t] = new TChain(string(dir[t]+"/"+trees[t]).data());
         }//tree loop ends
 
+	if(endfile==-1){
+		while(instr_Forest>>filename_Forest){
+			jtTree[0]->Add(filename_Forest.c_str());
+			jtTree[1]->Add(filename_Forest.c_str());
+			jtTree[2]->Add(filename_Forest.c_str());
+			jtTree[3]->Add(filename_Forest.c_str());
+			jtTree[4]->Add(filename_Forest.c_str());
+			if(run == "MC") jtTree[5]->Add(filename_Forest.c_str());
+			jtTree[6]->Add(filename_Forest.c_str());
+			cout << "file: "<< filename_Forest << endl;
+		}
+	}
+
+	else{
         for(int ifile = startfile; ifile<endfile; ++ifile){
 
         	instr_Forest>>filename_Forest;
@@ -66,7 +90,6 @@ public:
         	jtTree[2]->Add(filename_Forest.c_str());
         	jtTree[3]->Add(filename_Forest.c_str());
         	jtTree[4]->Add(filename_Forest.c_str());
-    //jtTree[5]->Add(filename_Forest.c_str());
         	if(run == "MC") jtTree[5]->Add(filename_Forest.c_str());
 
             jtTree[6]->Add(filename_Forest.c_str());
@@ -95,27 +118,23 @@ public:
                 cout << "Entries : " << jtTree[6]->GetEntries() << endl;
             }
               
-            cout<<"Total number of events loaded in HiForest = "<<jtTree[2]->GetEntries()<<endl;
         }
+	}
+	cout<<"Total number of events loaded in HiForest = "<<jtTree[2]->GetEntries()<<endl;
 
-        jtTree[2]->AddFriend(jtTree[0]);
+        /*jtTree[2]->AddFriend(jtTree[0]);
         jtTree[2]->AddFriend(jtTree[1]);
         jtTree[2]->AddFriend(jtTree[3]);
         jtTree[2]->AddFriend(jtTree[4]);
-  //jtTree[2]->AddFriend(jtTree[5]);
-        if(run == "MC") jtTree[2]->AddFriend(jtTree[5]);
-
-  //jtTree[3]->AddFriend(jtTree[0]);
-  //jtTree[3]->AddFriend(jtTree[1]);
-  //jtTree[3]->AddFriend(jtTree[4]);
+        if(run == "MC") jtTree[2]->AddFriend(jtTree[5]);*/
 
         if(jetType == "Calo") {
-        	jtTree[4]->SetBranchAddress("n", &nPFpart_F);
-        	jtTree[4]->SetBranchAddress("et", pfPt_F);
-        	jtTree[4]->SetBranchAddress("eta", pfEta_F);
-        	jtTree[4]->SetBranchAddress("phi", pfPhi_F);
+        	jtTree[4]->SetBranchAddress("n", &nCaloTowers);
+        	jtTree[4]->SetBranchAddress("et", ct_et);
+        	jtTree[4]->SetBranchAddress("eta", ct_eta);
+        	jtTree[4]->SetBranchAddress("phi", ct_phi);
         }
-        if(jetType == "PF") {
+        else if(jetType == "PF"){
         	jtTree[4]->SetBranchAddress("nPFpart", &nPFpart_F);
         	jtTree[4]->SetBranchAddress("pfId", &pfId_F);
         	jtTree[4]->SetBranchAddress("pfPt", &pfPt_F);
@@ -229,6 +248,8 @@ public:
         }
 
         if(coll == "pPb"){
+	    jtTree[0]->SetBranchStatus("*",0);
+	    jtTree[0]->SetBranchStatus("HLT_PAL1MinimumBiasHF_OR_SinglePixelTrack_*",1);
             jtTree[0]->SetBranchAddress("HLT_PAL1MinimumBiasHF_OR_SinglePixelTrack_part1_v1",&jetMB_p1_F);  
             jtTree[0]->SetBranchAddress("HLT_PAL1MinimumBiasHF_OR_SinglePixelTrack_part2_v1",&jetMB_p2_F);  
             jtTree[0]->SetBranchAddress("HLT_PAL1MinimumBiasHF_OR_SinglePixelTrack_part3_v1",&jetMB_p3_F);  
@@ -238,7 +259,8 @@ public:
             jtTree[0]->SetBranchAddress("HLT_PAL1MinimumBiasHF_OR_SinglePixelTrack_part7_v1",&jetMB_p7_F);  
             jtTree[0]->SetBranchAddress("HLT_PAL1MinimumBiasHF_OR_SinglePixelTrack_part8_v1",&jetMB_p8_F);  
             jtTree[0]->SetBranchAddress("HLT_PAL1MinimumBiasHF_OR_SinglePixelTrack_v1",&jetMB_p0_F);
-            
+         
+	    jtTree[0]->SetBranchStatus("HLT_PAAK4CaloJet*_Eta5p1_*",1);   
             jtTree[0]->SetBranchAddress("HLT_PAAK4CaloJet40_Eta5p1_v2",&jet40_F);
             jtTree[0]->SetBranchAddress("HLT_PAAK4CaloJet40_Eta5p1_v2_Prescl",&jet40_p_F);
             jtTree[0]->SetBranchAddress("HLT_PAAK4CaloJet60_Eta5p1_v2",&jet60_F);
@@ -247,9 +269,11 @@ public:
             jtTree[0]->SetBranchAddress("HLT_PAAK4CaloJet80_Eta5p1_v2_Prescl",&jet80_p_F);
             jtTree[0]->SetBranchAddress("HLT_PAAK4CaloJet100_Eta5p1_v2",&jet100_F);
             jtTree[0]->SetBranchAddress("HLT_PAAK4CaloJet100_Eta5p1_v2_Prescl",&jet100_p_F);
-            jtTree[0]->SetBranchAddress("HLT_PASinglePhoton30_Eta3p1_v2",&photon30_F);
-            jtTree[0]->SetBranchAddress("HLT_PAAK4CaloBJetCSV60_Eta2p1_v1",&csvTrg60_F);
-            jtTree[0]->SetBranchAddress("HLT_PAAK4CaloBJetCSV80_Eta2p1_v1",&csvTrg80_F);
+	    jtTree[0]->SetBranchStatus("HLT_PASinglePhoton30_Eta3p1_v*",1);
+            jtTree[0]->SetBranchAddress("HLT_PASinglePhoton30_Eta3p1_v1",&photon30_F);
+	    jtTree[0]->SetBranchStatus("HLT_PAAK4CaloBJetCSV*_Eta2p1_v*",1);
+            jtTree[0]->SetBranchAddress("HLT_PAAK4CaloBJetCSV60_Eta2p1_v2",&csvTrg60_F);
+            jtTree[0]->SetBranchAddress("HLT_PAAK4CaloBJetCSV80_Eta2p1_v2",&csvTrg80_F);
         }
         if(coll == "PbPb"){
         	jtTree[0]->SetBranchAddress("",&jetMB_F);
@@ -276,8 +300,20 @@ public:
   // jtTree[0]->SetBranchAddress("L1_SingleJet52_BptxAND_Prescl",&L1_sj52_p_F);
 
     };
+    ~ForestContainer(){
+	delete pfId_F;
+        delete pfPt_F;
+        delete pfVsPtInitial_F;
+        delete pfEta_F;
+        delete pfPhi_F;
+
+        delete rho;
+        delete rhoM;
+        delete etaMax;   
+
+   };
     void LoadEntries(int nEvt, string run){
-    	jtTree[0]->GetEntry(nEvt);
+	jtTree[0]->GetEntry(nEvt);
     	jtTree[1]->GetEntry(nEvt);
     	jtTree[2]->GetEntry(nEvt);
     	jtTree[3]->GetEntry(nEvt);
@@ -378,15 +414,20 @@ public:
 	int csvTrg80_F;
 
 	Int_t nPFpart_F;
-	vector<int> *pfId_F=0;
-	vector<float> *pfPt_F=0;
-	vector<float> *pfVsPtInitial_F=0;
-	vector<float> *pfEta_F=0;
-	vector<float> *pfPhi_F=0;
+	vector<int> *pfId_F;
+	vector<float> *pfPt_F;
+	vector<float> *pfVsPtInitial_F;
+	vector<float> *pfEta_F;
+	vector<float> *pfPhi_F;
     
-    vector<double> *rho=0;
-    vector<double> *rhoM=0;
-    vector<double> *etaMax=0;
+	vector<double> *rho;
+	vector<double> *rhoM;
+	vector<double> *etaMax;
+
+	int nCaloTowers;
+	float ct_et[10000];
+	float ct_eta[10000];
+	float ct_phi[10000];
 
 };
 

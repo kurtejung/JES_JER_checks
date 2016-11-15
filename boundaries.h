@@ -190,7 +190,7 @@ bool compare_pt(Jet jet1, Jet jet2){
 }
 
 
-float LjCut = 100.0;
-float SbjCut = 40.0;
+float LjCut = 80.0;
+float SbjCut = 30.0;
 
 #endif
