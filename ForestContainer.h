@@ -45,7 +45,7 @@ public:
         if(jetType == "Calo") dir[4] = "rechitanalyzer" ;
         if(jetType == "PF") dir[4] = "pfcandAnalyzer" ;
         if(run == "MC") dir[5] = "runAnalyzer";
-        if(coll != "PP") dir[6] = "hiFJRhoAnalyzer";
+        if(coll != "PP" && run2) dir[6] = "hiFJRhoAnalyzer";
 
         string trees[N];
         trees[0] = "HltTree";
@@ -57,7 +57,7 @@ public:
         if(jetType == "PF") trees[4] = "pfTree" ;
   //trees[5] = "jetObjTree";
         if(run == "MC") trees[5] = "run";
-        if(coll != "PP") trees[6] = "t";
+        if(coll != "PP" && run2) trees[6] = "t";
         
 
         int NLoop = N;
@@ -75,7 +75,7 @@ public:
 			jtTree[3]->Add(filename_Forest.c_str());
 			jtTree[4]->Add(filename_Forest.c_str());
 			if(run == "MC") jtTree[5]->Add(filename_Forest.c_str());
-			jtTree[6]->Add(filename_Forest.c_str());
+			if(coll != "PP" && run2) jtTree[6]->Add(filename_Forest.c_str());
 			cout << "file: "<< filename_Forest << endl;
 		}
 	}
@@ -92,7 +92,7 @@ public:
         	jtTree[4]->Add(filename_Forest.c_str());
         	if(run == "MC") jtTree[5]->Add(filename_Forest.c_str());
 
-            jtTree[6]->Add(filename_Forest.c_str());
+            	if(coll != "PP" && run2) jtTree[6]->Add(filename_Forest.c_str());
 
         	cout<<"filename: "<<filename_Forest<<endl;
 
@@ -114,9 +114,11 @@ public:
                     cout << "Tree loaded  " << string(dir[5]+"/"+trees[5]).data() << endl;
                     cout << "Entries : " << jtTree[5]->GetEntries() << endl;
                 }
-                cout << "Tree loaded  " << string(dir[6]+"/"+trees[6]).data() << endl;
-                cout << "Entries : " << jtTree[6]->GetEntries() << endl;
-            }
+		if(coll != "PP" && run2){
+                	cout << "Tree loaded  " << string(dir[6]+"/"+trees[6]).data() << endl;
+                	cout << "Entries : " << jtTree[6]->GetEntries() << endl;
+            	}	
+		}
               
         }
 	}
@@ -147,7 +149,7 @@ public:
         if(run == "MC"){
         	jtTree[5]->SetBranchAddress("xsec",&crossSection_F);
         }
-        if(coll != "PP"){
+        if(coll != "PP" && run2){
             jtTree[6]->SetBranchAddress("rho",&rho);
             jtTree[6]->SetBranchAddress("rhom",&rhoM);
             jtTree[6]->SetBranchAddress("etaMax",&etaMax);
@@ -247,7 +249,7 @@ public:
                     
         }
 
-        if(coll == "pPb"){
+        if(coll == "pPb" && run2){
 	    jtTree[0]->SetBranchStatus("*",0);
 	    jtTree[0]->SetBranchStatus("HLT_PAL1MinimumBiasHF_OR_SinglePixelTrack_*",1);
             jtTree[0]->SetBranchAddress("HLT_PAL1MinimumBiasHF_OR_SinglePixelTrack_part1_v1",&jetMB_p1_F);  
@@ -258,7 +260,7 @@ public:
             jtTree[0]->SetBranchAddress("HLT_PAL1MinimumBiasHF_OR_SinglePixelTrack_part6_v1",&jetMB_p6_F);  
             jtTree[0]->SetBranchAddress("HLT_PAL1MinimumBiasHF_OR_SinglePixelTrack_part7_v1",&jetMB_p7_F);  
             jtTree[0]->SetBranchAddress("HLT_PAL1MinimumBiasHF_OR_SinglePixelTrack_part8_v1",&jetMB_p8_F);  
-            jtTree[0]->SetBranchAddress("HLT_PAL1MinimumBiasHF_OR_SinglePixelTrack_v1",&jetMB_p0_F);
+            jtTree[0]->SetBranchAddress("HLT_PAL1MinimumBiasHF_OR_SinglePixelTrack_ForExpress_v1",&jetMB_p0_F);
          
 	    jtTree[0]->SetBranchStatus("HLT_PAAK4CaloJet*_Eta5p1_*",1);   
             jtTree[0]->SetBranchAddress("HLT_PAAK4CaloJet40_Eta5p1_v2",&jet40_F);
@@ -275,6 +277,24 @@ public:
             jtTree[0]->SetBranchAddress("HLT_PAAK4CaloBJetCSV60_Eta2p1_v2",&csvTrg60_F);
             jtTree[0]->SetBranchAddress("HLT_PAAK4CaloBJetCSV80_Eta2p1_v2",&csvTrg80_F);
         }
+	if(coll == "pPb" && !run2){
+
+		cout << "setting branch addresses" << endl;	
+		jtTree[0]->SetBranchStatus("*",0);
+	 	jtTree[0]->SetBranchStatus("HLT_L1MinimumBiasHF1AND_v1",1);
+		jtTree[0]->SetBranchAddress("HLT_L1MinimumBiasHF1AND_v1",&jetMB_p0_F);
+ 		jtTree[0]->SetBranchStatus("HLT_AK4CaloJet*_Eta5p1_*",1);
+		jtTree[0]->SetBranchAddress("HLT_PAJet40_NoJetID_v1",&jet40_F);
+		jtTree[0]->SetBranchAddress("HLT_PAJet40_NoJetID_v1_Prescl",&jet40_p_F);
+		jtTree[0]->SetBranchAddress("HLT_PAJet60_NoJetID_v1",&jet60_F);
+		jtTree[0]->SetBranchAddress("HLT_PAJet60_NoJetID_v1_Prescl",&jet60_p_F);
+		jtTree[0]->SetBranchAddress("HLT_PAJet80_NoJetID_v1",&jet80_F);
+		jtTree[0]->SetBranchAddress("HLT_PAJet80_NoJetID_v1_Prescl",&jet80_p_F);
+		jtTree[0]->SetBranchAddress("HLT_PAJet100_NoJetID_v1",&jet100_F);
+		jtTree[0]->SetBranchAddress("HLT_PAJet100_NoJetID_v1_Prescl",&jet100_p_F);
+		jtTree[0]->SetBranchStatus("HLT_HISinglePhoton30_Eta3p1_v*",1);
+		jtTree[0]->SetBranchAddress("HLT_HISinglePhoton30_Eta3p1_v1",&photon30_F);
+	}
         if(coll == "PbPb"){
         	jtTree[0]->SetBranchAddress("",&jetMB_F);
     //jtTree[0]->SetBranchAddress("HLT_L1MinimumBiasHF1OR_part1_v1_Prescl",&jetMB_p_F);  

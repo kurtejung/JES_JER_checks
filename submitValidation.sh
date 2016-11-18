@@ -59,7 +59,7 @@ sub produce_config_file {
 	print OUTPUTFILE ("cp $curWorkDir/ForestContainer.h . \n");
 	print OUTPUTFILE ("cp $curWorkDir/boundaries.h .\n");
 	print OUTPUTFILE ("cp $curWorkDir/$filelist .\n");
-	print OUTPUTFILE ("root -l -b -q $script\\+\\($istart,$iend,\\\"$filelist\\\"\\) \n");
+	print OUTPUTFILE ("root -l -b -q $script\\+\\+\\($istart,$iend,\\\"$filelist\\\"\\) \n");
 	print OUTPUTFILE ("cp *.root $curWorkDir \n");
 	print OUTPUTFILE ("exit 0\n");
 }	

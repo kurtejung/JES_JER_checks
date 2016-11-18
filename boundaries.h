@@ -42,6 +42,7 @@
 
 const bool printDebug=false;
 const bool doBjets = false;
+const bool run2 = true;
 
 // boundaries of the pt bins, cent bins and eta bins for the runForest and plot macros.
 
@@ -190,7 +191,7 @@ bool compare_pt(Jet jet1, Jet jet2){
 }
 
 
-float LjCut = 80.0;
-float SbjCut = 30.0;
+float LjCut = 120.0;
+float SbjCut = 50.0;
 
 #endif

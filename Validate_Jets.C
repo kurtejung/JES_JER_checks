@@ -8,8 +8,8 @@
 
 using namespace std;
 
-void Validate_Jets(int startfile = 60,
-                   int endfile = 70,
+void Validate_Jets(int startfile = 0,
+                   int endfile = 1,
 		   std::string infileList = "filelist.txt",
                    int radius = 4,
                    std::string coll= "pPb",
@@ -80,7 +80,9 @@ void Validate_Jets(int startfile = 60,
 	Float_t eta_cut_min = -3;
 	Float_t eta_cut_max = 3;
 	
-	TH2F * hRunN_vs_NJets = new TH2F("hRunN_Vs_NJets","",1000, 284750, 285750, 50, 0, 1000);
+	TH2F * hRunN_vs_NJets;
+	if(run2) hRunN_vs_NJets = new TH2F("hRunN_Vs_NJets","",1000, 284750, 285750, 50, 0, 100);
+	else hRunN_vs_NJets = new TH2F("hRunN_vs_NJets","",1000,210400,211700,50,0,100);
 	TH1F * hVz = new TH1F("hVz","Primary Vertex Z position;v_{z};counts",200, -20, 20);
 	
 	int ncen=5;
@@ -225,7 +227,6 @@ void Validate_Jets(int startfile = 60,
 	
 	if(printDebug) cout<<"Running through all the events now"<<endl;
   Long64_t nentries = jt.jtTree[0]->GetEntries();
-	//Long64_t nentries = 100000;
 	if(printDebug) nentries = 500;
 	TRandom rnd;
 	
@@ -242,6 +243,7 @@ void Validate_Jets(int startfile = 60,
 			//if(skipPho30 && jt.photon30_F) continue;
 			//if(jt.pcollisionEventSelection_F==0) continue;
 			//if(jt.pHBHENoiseFilter_F == 0) continue;
+			if(!jt.jet100_F) continue;
 			if(fabs(jt.vz_F)>15) continue;
 		}
 		hRunN_vs_NJets->Fill(jt.run_F, jt.nref_F);
@@ -283,13 +285,15 @@ void Validate_Jets(int startfile = 60,
 		}
 		
 		if(printDebug)cout<<"step1 pf cands finished "<<endl;
-		
-		assert(jt.etaMax->size() == 9);
-		for(unsigned int i=0; i<jt.etaMax->size(); i++){
-			rhoAnalyzer[centbin]->Fill(jt.rho->at(i),jt.etaMax->at(i)-0.01);
-			rhoMAnalyzer[centbin]->Fill(jt.rhoM->at(i),jt.etaMax->at(i)-0.01);
-			rhoAnalyzer[ncen-1]->Fill(jt.rho->at(i),jt.etaMax->at(i)-0.01);
-                        rhoMAnalyzer[ncen-1]->Fill(jt.rhoM->at(i),jt.etaMax->at(i)-0.01);
+	
+		if(run2){	
+			assert(jt.etaMax->size() == 9);
+			for(unsigned int i=0; i<jt.etaMax->size(); i++){
+				rhoAnalyzer[centbin]->Fill(jt.rho->at(i),jt.etaMax->at(i)-0.01);
+				rhoMAnalyzer[centbin]->Fill(jt.rhoM->at(i),jt.etaMax->at(i)-0.01);
+				rhoAnalyzer[ncen-1]->Fill(jt.rho->at(i),jt.etaMax->at(i)-0.01);
+				rhoMAnalyzer[ncen-1]->Fill(jt.rhoM->at(i),jt.etaMax->at(i)-0.01);
+			}
 		}
 		
 		if(printDebug)cout<<"step3 rho finished "<<endl;
@@ -300,8 +304,11 @@ void Validate_Jets(int startfile = 60,
 				jt.jetMB_F = 1;
 		}
 
-		if(coll == "pPb"){
+		if(coll == "pPb" && run2){
 			if(jt.jetMB_p0_F || jt.jetMB_p1_F || jt.jetMB_p2_F || jt.jetMB_p3_F || jt.jetMB_p4_F || jt.jetMB_p5_F || jt.jetMB_p6_F || jt.jetMB_p7_F || jt.jetMB_p8_F) jt.jetMB_F = 1;
+		}
+		if(coll == "pPb" && !run2){
+			if(jt.jetMB_p0_F) jt.jetMB_F = 1;
 		}
 
 		if(printDebug) cout<<"MinBias bit = "<<jt.jetMB_F<<endl;
@@ -454,7 +461,7 @@ void Validate_Jets(int startfile = 60,
                         if(jt.jetMB_F && jt.jet80_F) hJet80andMB[ncen-1]->Fill(jt.pt_F[ijet], jt.jet80_p_F);
                         if(jt.jetMB_F && jt.jet100_F) hJet100andMB[ncen-1]->Fill(jt.pt_F[ijet], jt.jet100_p_F);
 
-			if(doBjets){
+			if(doBjets && run2){
 				discrSSVHE[centbin]->Fill(jt.discr_ssvHighEff_F[ijet]);
 				discrSSVHP[centbin]->Fill(jt.discr_ssvHighPur_F[ijet]);
 				discrCSV[centbin]->Fill(jt.discr_csv_F[ijet]);
@@ -500,7 +507,7 @@ void Validate_Jets(int startfile = 60,
 				if(jt.pt_F[0]>30 && jt.pt_F[1]>30) hDeltaPhi[ncen-1]->Fill(deltaphi(jt.phi_F[0], jt.phi_F[1]));
 			}
 
-			if(jt.jet80_F && jt.pt_F[0] >LjCut && jt.pt_F[1] >SbjCut) { 
+			if(jt.jet100_F && jt.pt_F[0] >LjCut && jt.pt_F[1] >SbjCut) { 
 				hAjJetEta[centbin]->Fill(jt.eta_F[ijet]);
 				hAjJetPhi[centbin]->Fill(jt.phi_F[ijet]);
 				hDeltaPhi[centbin]->Fill(deltaphi(jt.phi_F[0], jt.phi_F[1]));
@@ -536,7 +543,7 @@ void Validate_Jets(int startfile = 60,
 	 //mc
 		
 		if(run == "Data"){
-			if(jt.jet80_F && jt.pt_F[0]>LjCut && jt.pt_F[1] >SbjCut){
+			if(jt.jet100_F && jt.pt_F[0]>LjCut && jt.pt_F[1] >SbjCut){
 				float Aj = (float)(jt.pt_F[0]-jt.pt_F[1])/(jt.pt_F[0]+jt.pt_F[1]);
 				pt2overpt1[centbin]->Fill((float)jt.pt_F[1]/jt.pt_F[0]);
 				hAj[centbin]->Fill(Aj);
